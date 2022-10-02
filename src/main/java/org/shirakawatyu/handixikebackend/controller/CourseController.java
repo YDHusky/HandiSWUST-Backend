@@ -14,12 +14,21 @@ public class CourseController {
     @Autowired
     CourseService courseService;
 
-    @GetMapping("/course")
+    @GetMapping("/course/all")
     @ResponseBody
     public String course(HttpSession session) {
         if(session.getAttribute("cookies") == null) {
             return "3401 LOGOUT";
         }
         return courseService.course(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")));
+    }
+
+    @GetMapping("/course/cur")
+    @ResponseBody
+    public String curCourse(HttpSession session) {
+        if(session.getAttribute("cookies") == null) {
+            return "3401 LOGOUT";
+        }
+        return courseService.courseCurWeek(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")));
     }
 }
