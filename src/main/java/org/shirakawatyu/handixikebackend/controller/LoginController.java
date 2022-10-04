@@ -20,15 +20,15 @@ public class LoginController {
 
     @GetMapping("/key")
     @ResponseBody
-    public Map<String,String> getKey() {
-        return loginService.getKey();
+    public Map<String,String> getKey(HttpSession session) {
+        return loginService.getKey(session);
     }
 
     @GetMapping("/captcha")
     @ResponseBody
-    public String getCaptcha() {
+    public String getCaptcha(HttpSession session) {
 
-        return loginService.getCaptcha();
+        return loginService.getCaptcha(session);
     }
 
     @PostMapping("/login")

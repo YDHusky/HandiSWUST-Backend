@@ -44,6 +44,7 @@ public class Requests {
                 for (int i = 0; i < size; i++) {
                     if (cookies.get(i).contains(s.substring(0, s.indexOf("=")))) {
                         try {
+                            
                             cookies.remove(i);
                         }catch (Exception e) {
                             e.printStackTrace();
