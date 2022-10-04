@@ -93,7 +93,8 @@ public class LoginServiceImpl implements LoginService {
     public String logout(HttpSession session) {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         Requests.get("http://myo.swust.edu.cn/mht_shall/a/logout", "http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", cookies, restTemplate);
-        session.setAttribute("cookies", cookies.toArray());
+//        session.setAttribute("cookies", cookies.toArray());
+        session.removeAttribute("cookies");
         return "2200 LOGOUT SUCCESS";
     }
 }
