@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
@@ -93,8 +95,16 @@ public class LoginServiceImpl implements LoginService {
     public String logout(HttpSession session) {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         Requests.get("http://myo.swust.edu.cn/mht_shall/a/logout", "http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", cookies, restTemplate);
-//        session.setAttribute("cookies", cookies.toArray());
+        session.setAttribute("cookies", cookies.toArray());
         session.removeAttribute("cookies");
         return "2200 LOGOUT SUCCESS";
     }
+
+
+        public String loginCheck(HttpSession session) {
+
+            if(session.getAttribute("cookies") == null) return "3401 LOGOUT";
+            return "2200 LOGOUT SUCCESS";
+        }
+
 }

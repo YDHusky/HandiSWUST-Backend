@@ -8,4 +8,5 @@ public interface LoginService {
     String getCaptcha(HttpSession session);
     String login(String username, String password, String captcha, HttpSession session);
     String logout(HttpSession session);
+    public String loginCheck(HttpSession session);
 }

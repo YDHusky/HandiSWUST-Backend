@@ -3,7 +3,11 @@ package org.shirakawatyu.handixikebackend.utils;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +92,7 @@ public class Requests {
             }
             cookies = strings;
             List<String> strings1 = entity.getHeaders().get("Set-Cookie");
+
             if(strings1 != null) {
                 for (String s : strings1) {
                     for (String i : cookies) {
@@ -96,9 +101,11 @@ public class Requests {
                         }
                     }
                     cookies.add(s);
+
                 }
             }
         }
+
         return entity;
     }
 }
