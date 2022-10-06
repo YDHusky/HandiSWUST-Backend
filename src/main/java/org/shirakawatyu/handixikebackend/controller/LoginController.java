@@ -44,4 +44,13 @@ public class LoginController {
 
         return loginService.logout(session);
     }
+
+    @GetMapping("/loginCheck")
+    @ResponseBody
+    public String loginCheck(HttpSession session) {
+
+        return loginService.loginCheck(session);
+
+
+    }
 }

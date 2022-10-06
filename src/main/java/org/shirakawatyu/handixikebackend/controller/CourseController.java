@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 public class CourseController {
@@ -29,6 +30,13 @@ public class CourseController {
         if(session.getAttribute("cookies") == null) {
             return "3401 LOGOUT";
         }
-        return courseService.courseCurWeek(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")));
+        Object cookies = session.getAttribute("cookies");
+        List<String> list = null;
+        try {
+            list = ArrayUtils.arrayToList((Object[]) cookies);
+        }catch (Exception e) {
+            return "3401 LOGOUT";
+        }
+        return courseService.courseCurWeek(list);
     }
 }
