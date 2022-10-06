@@ -24,7 +24,7 @@ public class ScoreController {
 
 
     JSONPObject jsonpObject;
-    @GetMapping("/scores")
+    @GetMapping("/api/scores")
     @ResponseBody
     public String scores(HttpSession session) throws CircularRedirectException {
         if(session.getAttribute("cookies") == null) {

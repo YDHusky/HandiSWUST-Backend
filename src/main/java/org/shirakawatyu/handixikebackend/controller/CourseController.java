@@ -15,16 +15,16 @@ public class CourseController {
     @Autowired
     CourseService courseService;
 
-    @GetMapping("/course/all")
+    @GetMapping("/api/course/all")
     @ResponseBody
     public String course(HttpSession session) {
         if(session.getAttribute("cookies") == null) {
             return "3401 LOGOUT";
         }
-        return courseService.course(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")));
+        return courseService.course(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")), session);
     }
 
-    @GetMapping("/course/cur")
+    @GetMapping("/api/course/cur")
     @ResponseBody
     public String curCourse(HttpSession session) {
         if(session.getAttribute("cookies") == null) {
@@ -37,6 +37,6 @@ public class CourseController {
         }catch (Exception e) {
             return "3401 LOGOUT";
         }
-        return courseService.courseCurWeek(list);
+        return courseService.courseCurWeek(list, session);
     }
 }

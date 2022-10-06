@@ -59,6 +59,9 @@ public class Requests {
                 }
             }
         }
+        if(get1.getStatusCode().value() == 302) {
+            return get(url.substring(0, url.indexOf("/", 7)) + get1.getHeaders().getLocation(), "", cookies, restTemplate);
+        }
         return get1;
     }
 
@@ -98,6 +101,9 @@ public class Requests {
                     cookies.add(s);
                 }
             }
+        }
+        if(entity.getStatusCode().value() == 302) {
+            return get(url.substring(0, url.indexOf("/", 7)) + entity.getHeaders().getLocation(), "", cookies, restTemplate);
         }
         return entity;
     }

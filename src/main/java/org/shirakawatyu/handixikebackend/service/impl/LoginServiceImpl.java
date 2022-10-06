@@ -1,18 +1,23 @@
 package org.shirakawatyu.handixikebackend.service.impl;
 
 import org.apache.http.client.CircularRedirectException;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.shirakawatyu.handixikebackend.config.InitRestTemplate;
 import org.shirakawatyu.handixikebackend.service.LoginService;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.shirakawatyu.handixikebackend.utils.Requests;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpSession;
 import java.util.Base64;
@@ -22,7 +27,7 @@ import java.util.Map;
 
 @Service
 public class LoginServiceImpl implements LoginService {
-    @Autowired
+
     RestTemplate restTemplate;
 
 //    List<String> cookies;
@@ -32,6 +37,7 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public Map<String, String> getKey(HttpSession session) {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
+
         ResponseEntity<String> entity = Requests.get("http://cas.swust.edu.cn/authserver/getKey", "", cookies, restTemplate);
         session.setAttribute("cookies", cookies.toArray());
         String text = entity.toString();
@@ -43,6 +49,7 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public String getCaptcha(HttpSession session) {
+        restTemplate = InitRestTemplate.init(new BasicCookieStore());
         ResponseEntity<byte[]> entity = restTemplate.getForEntity("http://cas.swust.edu.cn/authserver/captcha", byte[].class);
         if(entity.getHeaders().get("Set-Cookie") != null) {
             List<String> cookies = entity.getHeaders().get("Set-Cookie");
@@ -64,6 +71,7 @@ public class LoginServiceImpl implements LoginService {
      */
     @Override
     public String login(String username, String password, String captcha, HttpSession session) {
+
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         ResponseEntity<String> res = restTemplate.getForEntity("http://cas.swust.edu.cn/authserver/login?service=http://202.115.175.175/swust/", String.class);
         String execution = null;
@@ -92,6 +100,7 @@ public class LoginServiceImpl implements LoginService {
             return "1500 LOGIN FAIL";
         }
         session.setAttribute("cookies", cookies.toArray());
+        session.setAttribute("template", restTemplate);
         count++;
 
         if(entity != null && entity.getBody() != null && entity.getBody().contains("西南科技大学学生实践教学自助学习系统")) {
