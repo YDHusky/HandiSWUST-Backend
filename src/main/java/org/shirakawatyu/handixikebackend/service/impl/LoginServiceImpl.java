@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.service.impl;
 
 import org.apache.http.client.CircularRedirectException;
+import org.apache.http.client.CookieStore;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,8 +30,7 @@ import java.util.Map;
 public class LoginServiceImpl implements LoginService {
 
     RestTemplate restTemplate;
-
-//    List<String> cookies;
+    BasicCookieStore cookieStore;
 
     int count = 1;
 
@@ -49,7 +49,8 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public String getCaptcha(HttpSession session) {
-        restTemplate = InitRestTemplate.init(new BasicCookieStore());
+        cookieStore = new BasicCookieStore();
+        restTemplate = InitRestTemplate.init(cookieStore);
         ResponseEntity<byte[]> entity = restTemplate.getForEntity("http://cas.swust.edu.cn/authserver/captcha", byte[].class);
         if(entity.getHeaders().get("Set-Cookie") != null) {
             List<String> cookies = entity.getHeaders().get("Set-Cookie");
@@ -104,6 +105,8 @@ public class LoginServiceImpl implements LoginService {
         count++;
 
         if(entity != null && entity.getBody() != null && entity.getBody().contains("西南科技大学学生实践教学自助学习系统")) {
+            session.setAttribute("status", true);
+            session.setAttribute("cookieStore", cookieStore);
             return "1200 LOGIN SUCCESS";
         }
         return "1500 LOGIN FAIL";
@@ -114,12 +117,15 @@ public class LoginServiceImpl implements LoginService {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         Requests.get("http://myo.swust.edu.cn/mht_shall/a/logout", "http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", cookies, restTemplate);
         session.removeAttribute("cookies");
+        session.removeAttribute("status");
+        session.removeAttribute("template");
+        session.removeAttribute("cookieStore");
         return "2200 LOGOUT SUCCESS";
     }
 
 
     public String loginCheck(HttpSession session) {
-        if(session.getAttribute("cookies") == null) return "3401 LOGOUT";
-        return "2200 LOGOUT SUCCESS";
+        if(session.getAttribute("status") == null) return "3401 LOGOUT";
+        return "3200 LOGIN";
     }
 }

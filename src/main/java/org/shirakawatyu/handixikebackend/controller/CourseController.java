@@ -18,7 +18,7 @@ public class CourseController {
     @GetMapping("/api/course/all")
     @ResponseBody
     public String course(HttpSession session) {
-        if(session.getAttribute("cookies") == null) {
+        if(session.getAttribute("status") == null) {
             return "3401 LOGOUT";
         }
         return courseService.course(ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies")), session);
@@ -27,7 +27,7 @@ public class CourseController {
     @GetMapping("/api/course/cur")
     @ResponseBody
     public String curCourse(HttpSession session) {
-        if(session.getAttribute("cookies") == null) {
+        if(session.getAttribute("status") == null) {
             return "3401 LOGOUT";
         }
         Object cookies = session.getAttribute("cookies");
