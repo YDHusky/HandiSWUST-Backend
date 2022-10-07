@@ -60,7 +60,7 @@ public class ScoreServiceImpl implements ScoreService {
                 map.put(setTerm((String)json.get("term")), term);
             }
         }
-        System.out.println(map);
+//        System.out.println(map);
         return JSONObject.toJSONString(map);
     }
 }

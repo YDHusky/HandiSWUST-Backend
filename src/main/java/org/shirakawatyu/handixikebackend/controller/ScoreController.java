@@ -27,7 +27,7 @@ public class ScoreController {
     @GetMapping("/api/scores")
     @ResponseBody
     public String scores(HttpSession session) throws CircularRedirectException {
-        if(session.getAttribute("cookies") == null) {
+        if(session.getAttribute("status") == null) {
             return "3401 LOGOUT";
         }
 
