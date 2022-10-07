@@ -26,7 +26,7 @@ import java.util.List;
 @Service
 public class CourseServiceImpl implements CourseService {
 
-    @Autowired
+
     RestTemplate restTemplate;
 
     @Override
@@ -98,7 +98,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public String course(List<String> cookies) {
+    public String course(List<String> cookies, HttpSession session) {
+        restTemplate = (RestTemplate) session.getAttribute("template");
         JSONArray lessonsArray = getRawCourse(cookies);
         // 对节数大于2的课以及重课处理
         LessonUtils.process(lessonsArray);
@@ -107,7 +108,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public String courseCurWeek(List<String> cookies) {
+    public String courseCurWeek(List<String> cookies, HttpSession session) {
+        restTemplate = (RestTemplate) session.getAttribute("template");
         JSONArray lessonsArray = getRawCourse(cookies);
         int size = lessonsArray.size();
         for (int i = 0; i < size; ) {

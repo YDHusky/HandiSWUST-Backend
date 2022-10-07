@@ -18,34 +18,34 @@ public class LoginController {
     @Autowired
     LoginService loginService;
 
-    @GetMapping("/key")
+    @GetMapping("/api/key")
     @ResponseBody
     public Map<String,String> getKey(HttpSession session) {
         return loginService.getKey(session);
     }
 
-    @GetMapping("/captcha")
+    @GetMapping("/api/captcha")
     @ResponseBody
     public String getCaptcha(HttpSession session) {
 
         return loginService.getCaptcha(session);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/api/login")
     @ResponseBody
     public String login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpSession session) {
 
         return loginService.login(username, password, captcha, session);
     }
 
-    @GetMapping("/logout")
+    @GetMapping("/api/logout")
     @ResponseBody
     public String logout(HttpSession session) {
 
         return loginService.logout(session);
     }
 
-    @GetMapping("/loginCheck")
+    @GetMapping("/api/loginCheck")
     @ResponseBody
     public String loginCheck(HttpSession session) {
 
