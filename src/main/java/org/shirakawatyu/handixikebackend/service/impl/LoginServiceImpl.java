@@ -1,9 +1,5 @@
 package org.shirakawatyu.handixikebackend.service.impl;
 
-import org.apache.http.client.CircularRedirectException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.shirakawatyu.handixikebackend.service.LoginService;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.shirakawatyu.handixikebackend.utils.Requests;
@@ -12,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
@@ -66,14 +64,7 @@ public class LoginServiceImpl implements LoginService {
     public String login(String username, String password, String captcha, HttpSession session) {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         ResponseEntity<String> res = restTemplate.getForEntity("http://cas.swust.edu.cn/authserver/login?service=http://202.115.175.175/swust/", String.class);
-        String execution = null;
-        try {
-            Document parse = Jsoup.parse(res.getBody());
-            Elements formCont = parse.getElementsByAttributeValue("name", "execution");
-            execution = formCont.get(0).attr("value");
-        }catch (Exception e) {
-            execution = "e1s1";
-        }
+        String execution = "e" + count + "s1";
 
         //  封装参数，千万不要替换为Map与HashMap，否则参数无法传递
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
@@ -104,13 +95,16 @@ public class LoginServiceImpl implements LoginService {
     public String logout(HttpSession session) {
         List<String> cookies = ArrayUtils.arrayToList((Object[]) session.getAttribute("cookies"));
         Requests.get("http://myo.swust.edu.cn/mht_shall/a/logout", "http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", cookies, restTemplate);
+        session.setAttribute("cookies", cookies.toArray());
         session.removeAttribute("cookies");
         return "2200 LOGOUT SUCCESS";
     }
 
 
-    public String loginCheck(HttpSession session) {
-        if(session.getAttribute("cookies") == null) return "3401 LOGOUT";
-        return "2200 LOGOUT SUCCESS";
-    }
+        public String loginCheck(HttpSession session) {
+
+            if(session.getAttribute("cookies") == null) return "3401 LOGOUT";
+            return "2200 LOGOUT SUCCESS";
+        }
+
 }
