@@ -6,13 +6,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.shirakawatyu.handixikebackend.exception.RequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.io.EOFException;
-import java.net.SocketException;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -78,17 +78,14 @@ public class ApiLayerAspect {
             cnt.times++;
             Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Bad Gateway: " + method + " " + cnt.times);
             throw new CircuitBreakerException();
-        } catch (SocketException e) {
+        } catch (IOException e) {
             cnt.times++;
-            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Socket Exception: " + method + " " + cnt.times);
+            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "IO Exception: " + method + " " + cnt.times);
             throw new CircuitBreakerException();
-        } catch (EOFException e) {
-            if (e.getMessage().contains("SSL peer")) {
-                cnt.times++;
-                Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "SSL peer shut down incorrectly: " + method + " " + cnt.times);
-                throw new CircuitBreakerException();
-            }
-            throw new RuntimeException(e);
+        } catch (RequestException e) {
+            cnt.times++;
+            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Request Exception: " + method + " " + cnt.times);
+            throw new CircuitBreakerException();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

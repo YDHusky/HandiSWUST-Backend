@@ -1,31 +1,22 @@
 package org.shirakawatyu.handixikebackend.utils;
 
-import jakarta.servlet.http.HttpSession;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.util.Timeout;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
+import org.shirakawatyu.handixikebackend.exception.RequestException;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 封装的发送请求
@@ -82,7 +73,7 @@ public class Requests {
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
             return client.execute(httpGet, handler);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RequestException(e);
         }
     }
 
@@ -96,7 +87,7 @@ public class Requests {
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
             return client.execute(httpPost, handler);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RequestException(e);
         }
     }
 }
