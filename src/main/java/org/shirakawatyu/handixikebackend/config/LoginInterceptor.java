@@ -20,8 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         HttpSession session = request.getSession();
-        RestTemplate template = (RestTemplate) session.getAttribute("template");
-        if (session.getAttribute("status") != null && template != null) {
+        if (session.getAttribute("no") != null) {
             return true;
         } else {
             response.getWriter().write(JSON.toJSONString(Result.fail().code(ResultCode.LOGOUT)));

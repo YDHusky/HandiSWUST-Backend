@@ -15,15 +15,19 @@ public class MvcConfig implements WebMvcConfigurer {
     TimeInterceptor timeInterceptor;
     @Autowired
     LoginInterceptor loginInterceptor;
+    @Autowired
+    SessionInterceptor sessionInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(sessionInterceptor)
+                .addPathPatterns("/**");
         registry.addInterceptor(loginInterceptor)
                 .excludePathPatterns("/api/v2/login/**")
                 .excludePathPatterns("/api/count")
                 .excludePathPatterns("/api/week")
                 .excludePathPatterns("/api/web/version")
                 .excludePathPatterns("/api/v2/course/local/**");
-
         registry.addInterceptor(timeInterceptor)
                 .excludePathPatterns("/api/v2/login/loginCheck")
                 .excludePathPatterns("/api/count")

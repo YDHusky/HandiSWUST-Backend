@@ -2,6 +2,7 @@ package org.shirakawatyu.handixikebackend.cache.impl;
 
 import com.alibaba.fastjson2.JSONException;
 import jakarta.annotation.Resource;
+import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
 import org.shirakawatyu.handixikebackend.common.Result;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -38,24 +40,22 @@ public class RawCourseCacheImpl implements RawCourseCache {
 
     @Cacheable(value = "Course", key = "'r'+#p1", unless = "null == #result")
     @Override
-    public List<Lesson> getRawCourse(RestTemplate restTemplate, String no) {
-        List<Lesson> lessonsArray = new ArrayList<>();
+    public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
+        HashSet<Lesson> lessonsArray = new HashSet<>();
         List<Lesson> normalCourse;
-        // 因为normal course api已经能拿到包括实验课的所有课了，先注释掉这行
         List<Lesson> experimentCourse;
         try {
-            normalCourse = normalCourseApi.getCourse(restTemplate);
-            // 因为normal course api已经能拿到包括实验课的所有课了，先注释掉这行
-            experimentCourse = experimentCourseApi.getCourse(restTemplate);
+            normalCourse = normalCourseApi.getCourse(cookieStore);
+            experimentCourse = experimentCourseApi.getCourse(cookieStore);
         } catch (Exception e) {
             throw new NotLoginException();
         }
         lessonsArray.addAll(normalCourse);
-        // 因为normal course api已经能拿到包括实验课的所有课了，先注释掉这行
         lessonsArray.addAll(experimentCourse);
         if (!lessonsArray.isEmpty()) {
-            ArrayUtils.nullObjChk(lessonsArray);
-            return lessonsArray;
+            ArrayList<Lesson> lessonList = new ArrayList<>(lessonsArray);
+            ArrayUtils.nullObjChk(lessonList);
+            return lessonList;
         }
         return null;
     }

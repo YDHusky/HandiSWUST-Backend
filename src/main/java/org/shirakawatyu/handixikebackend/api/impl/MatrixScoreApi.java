@@ -1,15 +1,14 @@
 package org.shirakawatyu.handixikebackend.api.impl;
 
+import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ScoreApi;
 import org.shirakawatyu.handixikebackend.pojo.GradePointAverage;
 import org.shirakawatyu.handixikebackend.pojo.Score;
 import org.shirakawatyu.handixikebackend.utils.Requests;
 import org.shirakawatyu.handixikebackend.utils.ScoreUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -21,17 +20,16 @@ import java.util.logging.Logger;
 @Component("MatrixScoreApi")
 public class MatrixScoreApi implements ScoreApi {
 
-    private static final String scoreUrl = "https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm";
+    private static final String SCORE_URL = "https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm";
 
     @Override
-    public GradePointAverage getGradePointAverage(RestTemplate restTemplate) {
-        String allGPA = "", requiredGPA = "", resp = "";
+    public GradePointAverage getGradePointAverage(CookieStore cookieStore) {
+        String allGPA, requiredGPA, resp = "";
         try {
-            Requests.post(
-                    "http://cas.swust.edu.cn/authserver/login?service=" + scoreUrl + "?event=studentPortal:DEFAULT_EVENT",
-                    new LinkedMultiValueMap<>(), restTemplate);
-            ResponseEntity<String> responseEntity1 = Requests.get(scoreUrl + "?event=studentProfile:courseMark", "", restTemplate);
-            resp = responseEntity1.getBody();
+            Requests.postForString(
+                    "http://cas.swust.edu.cn/authserver/login?service=" + SCORE_URL + "?event=studentPortal:DEFAULT_EVENT",
+                    new LinkedMultiValueMap<>(), cookieStore);
+            resp = Requests.getForString(SCORE_URL + "?event=studentProfile:courseMark", "", cookieStore);
             List<String> list = Jsoup.parse(Objects.requireNonNull(resp)).getElementsByClass("boxNavigation").eachText();
             if (list.isEmpty()) {
                 return null;
@@ -51,15 +49,14 @@ public class MatrixScoreApi implements ScoreApi {
     }
 
     @Override
-    public LinkedHashMap<String, ArrayList<Score>> getScore(RestTemplate restTemplate) {
+    public LinkedHashMap<String, ArrayList<Score>> getScore(CookieStore cookieStore) {
         List<String> scores = null;
         String resp = "";
         try {
-            Requests.post(
-                    "http://cas.swust.edu.cn/authserver/login?service=" + scoreUrl + "?event=studentPortal:DEFAULT_EVENT",
-                    new LinkedMultiValueMap<>(), restTemplate);
-            ResponseEntity<String> responseEntity1 = Requests.get(scoreUrl + "?event=studentProfile:courseMark", "", restTemplate);
-            resp = responseEntity1.getBody();
+            Requests.postForString(
+                    "http://cas.swust.edu.cn/authserver/login?service=" + SCORE_URL + "?event=studentPortal:DEFAULT_EVENT",
+                    new LinkedMultiValueMap<>(), cookieStore);
+            resp = Requests.getForString(SCORE_URL + "?event=studentProfile:courseMark", "", cookieStore);
             scores = Jsoup.parse(resp).getElementsByClass("UItable").select("tr").eachText();
             if (scores.isEmpty()) {
                 return null;

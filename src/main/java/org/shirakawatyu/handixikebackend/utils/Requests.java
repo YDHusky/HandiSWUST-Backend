@@ -1,67 +1,102 @@
 package org.shirakawatyu.handixikebackend.utils;
 
 import jakarta.servlet.http.HttpSession;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * 封装的发送请求
+ *
  * @author ShirakawaTyu
  * @since 2022/10/1 17:45
  */
 public class Requests {
-    /**
-     * 本方法用于获取session中的restTemplate
-     *
-     * @param session tomcat的session实例
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0";
 
-     * @return restTemplate
-     */
-    public static RestTemplate getRestTemplate(HttpSession session){
-        return (RestTemplate)session.getAttribute("template");
+    private static final RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(3000))
+            .setResponseTimeout(Timeout.ofMilliseconds(3000))
+            .setCircularRedirectsAllowed(true)
+            .setCookieSpec(StandardCookieSpec.RELAXED)
+            .build();
+
+    public static String getForString(String url, String referer, CookieStore cookieStore) {
+        return getByHttpClient(url, referer, cookieStore, classicHttpResponse -> {
+            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            String encoding = entity.getContentEncoding();
+            if (encoding == null) {
+                encoding = "UTF-8";
+            }
+            return new String(entity.getContent().readAllBytes(), encoding);
+        });
     }
-    /**
-     * 本方法用于发起get请求，本质上是对RestTemplate的封装
-     * <p>
-     * 使用时，传入需要请求的url，referer(来源，为了反反爬虫，如果不需要用到请传入""字符串)，cookies，restTemplate(在外部Autowire一个传进来就行)。
-     * 返回一个ResponseEntity<String>对象，通过这个对象可以获得需要的数据
-     *
-     * @param url 请求url
-     * @param referer 来源
-     * @param restTemplate RestTemplate对象
-     * @return get1
-     */
 
-    public static ResponseEntity<String> get(String url, String referer, RestTemplate restTemplate) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        if(!"".equals(referer)) {
-            headers.set("referer", referer);
+    public static byte[] getForBytes(String url, String referer, CookieStore cookieStore) {
+        return getByHttpClient(url, referer, cookieStore, classicHttpResponse -> {
+            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            return entity.getContent().readAllBytes();
+        });
+    }
+
+    public static String postForString(String url, MultiValueMap<String, String> data, CookieStore cookieStore) {
+        return postByHttpClient(url, cookieStore, data, classicHttpResponse -> {
+            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            String encoding = entity.getContentEncoding();
+            if (encoding == null) {
+                encoding = "UTF-8";
+            }
+            return new String(entity.getContent().readAllBytes(), encoding);
+        });
+    }
+
+    public static <T> T getByHttpClient(String url, String referer, CookieStore cookieStore, HttpClientResponseHandler<T> handler) {
+        HttpGet httpGet = new HttpGet(url);
+        if (!"".equals(referer)) {
+            httpGet.addHeader("referer", referer);
         }
-        MultiValueMap<String, String> map1= new LinkedMultiValueMap<>();
-        HttpEntity<MultiValueMap<String, String>> httpEntity1 = new HttpEntity<>(map1, headers);
-
-        return restTemplate.exchange(url, HttpMethod.GET, httpEntity1, String.class);
+        httpGet.addHeader("Content-Type", "application/json");
+        httpGet.addHeader("User-Agent", USER_AGENT);
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
+            return client.execute(httpGet, handler);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /**
-     * 本方法用于发起post请求，本质上是对RestTemplate的封装
-     * <p>
-     * 使用时，传入需要请求的url，cookies，data(需要携带的表单参数，如果没参数请传一个空的MultiValueMap)，restTemplate(在外部Autowire一个传进来就行)。
-     * 返回一个ResponseEntity<String>对象，通过这个对象可以获得需要的数据
-     *
-     * @param url 请求url
-     * @param data 请求参数
-     * @param restTemplate RestTemplate对象
-     * @return entity
-     */
-    public static ResponseEntity<String> post(String url, MultiValueMap<String, String> data, RestTemplate restTemplate) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(data, headers);
-        return restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
+    public static <T> T postByHttpClient(String url, CookieStore cookieStore, MultiValueMap<String, String> data, HttpClientResponseHandler<T> handler) {
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        httpPost.addHeader("User-Agent", USER_AGENT);
+        ArrayList<NameValuePair> params = new ArrayList<>();
+        data.forEach((key, value) -> params.add(new BasicNameValuePair(key, value.get(0))));
+        httpPost.setEntity(new UrlEncodedFormEntity(params));
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
+            return client.execute(httpPost, handler);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
 }

@@ -1,11 +1,17 @@
 package org.shirakawatyu.handixikebackend.controller;
 
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.service.LoginService;
+import org.shirakawatyu.handixikebackend.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * 与认证相关的接口
@@ -17,8 +23,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v2/login")
 public class LoginController {
     @Autowired
-
     LoginService loginService;
+    @Autowired
+    JwtUtils jwtUtils;
+    @Value("${jwt.cookie-expire}")
+    String cookieExpire;
 
     @GetMapping("/key")
     public Result getKey(HttpSession session) {
@@ -31,12 +40,23 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public Result login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpSession session) {
-        return loginService.login(username, password, captcha, session);
+    public Result login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpSession session, HttpServletResponse response) {
+        Result result = loginService.login(username, password, captcha, session);
+        HashMap<String, Object> map = new HashMap<>();
+        session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
+        Cookie cookie = new Cookie("Token", jwtUtils.create(map));
+        cookie.setPath("/");
+        cookie.setMaxAge(Integer.parseInt(cookieExpire));
+        response.addCookie(cookie);
+        return result;
     }
 
     @GetMapping("/logout")
-    public Result logout(HttpSession session) {
+    public Result logout(HttpSession session, HttpServletResponse response) {
+        Cookie cookie = new Cookie("Token", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
         return loginService.logout(session);
     }
 

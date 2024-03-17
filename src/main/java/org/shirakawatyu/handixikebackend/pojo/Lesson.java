@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.pojo;
 
 import java.io.Serializable;
+import java.util.HashSet;
 
 
 public class Lesson implements Serializable {
@@ -119,5 +120,35 @@ public class Lesson implements Serializable {
 
     public void setSection_start(String section_start) {
         this.section_start = section_start;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Lesson lesson) {
+            return this.toString().equals(lesson.toString());
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Lesson{" +
+                "jw_course_code='" + jw_course_code + '\'' +
+                ", base_teacher_name='" + base_teacher_name + '\'' +
+                ", base_room_name='" + base_room_name + '\'' +
+                ", week='" + week + '\'' +
+                ", jw_task_book_no='" + jw_task_book_no + '\'' +
+                ", jw_course_name='" + jw_course_name + '\'' +
+                ", section_end='" + section_end + '\'' +
+                ", week_day='" + week_day + '\'' +
+                ", section='" + section + '\'' +
+                ", base_teacher_no='" + base_teacher_no + '\'' +
+                ", section_start='" + section_start + '\'' +
+                '}';
     }
 }

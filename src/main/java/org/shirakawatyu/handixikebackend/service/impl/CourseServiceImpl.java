@@ -1,7 +1,9 @@
 package org.shirakawatyu.handixikebackend.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
+import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
@@ -27,7 +29,7 @@ public class CourseServiceImpl implements CourseService {
     // 不做处理返回所有课程的原值
     @Override
     public Result course(HttpSession session, String no) {
-        List<Lesson> lessonList = rawCourse.getRawCourse((RestTemplate) session.getAttribute("template"), no);
+        List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         JSONArray lessonsArray = new JSONArray(lessonList);
         if (!lessonsArray.isEmpty()) {
             return Result.ok().data(lessonsArray.toJSONString());
@@ -38,7 +40,7 @@ public class CourseServiceImpl implements CourseService {
     @Cacheable(value = "Course", key = "'c'+#p1", unless = "#result.data eq '[]'")
     @Override
     public Result courseCurWeek(HttpSession session, String no) {
-        List<Lesson> lessonList = rawCourse.getRawCourse((RestTemplate) session.getAttribute("template"), no);
+        List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         String s = LessonUtils.simpleSelectWeek(Integer.parseInt(DateUtil.curWeek()), lessonList);
         return Result.ok().data(s);
     }
@@ -46,7 +48,7 @@ public class CourseServiceImpl implements CourseService {
     @Cacheable(value = "Course", key = "'s'+#p2+'s'+#p1", unless = "#result.data eq '[]'")
     @Override
     public Result courseSelectedWeek(HttpSession session, String no, int selectedWeek) {
-        List<Lesson> lessonList = rawCourse.getRawCourse((RestTemplate) session.getAttribute("template"), no);
+        List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         String s = LessonUtils.simpleSelectWeek(selectedWeek, lessonList);
         return Result.ok().data(s);
     }

@@ -7,9 +7,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 public interface LoginApi {
-    Map<String, String> getKey(RestTemplate restTemplate);
-    byte[] getCaptcha(RestTemplate restTemplate);
-    int login(String username, String password, String captcha, CookieStore cookieStore, RestTemplate restTemplate);
-    boolean logout(RestTemplate restTemplate);
-    boolean loginCheck(RestTemplate template);
+    Map<String, String> getKey(CookieStore cookieStore);
+    byte[] getCaptcha(CookieStore cookieStore);
+    int login(String username, String password, String captcha, CookieStore cookieStore);
+    boolean logout(CookieStore cookieStore);
 }

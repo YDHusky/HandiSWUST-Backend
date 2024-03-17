@@ -1,7 +1,7 @@
 package org.shirakawatyu.handixikebackend.api;
 
-import org.springframework.web.client.RestTemplate;
+import org.apache.hc.client5.http.cookie.CookieStore;
 
 public interface ExamApi {
-    public String getExam(RestTemplate restTemplate);
+    String getExam(CookieStore cookieStore);
 }

@@ -9,12 +9,10 @@ import org.jsoup.select.Elements;
 import org.shirakawatyu.handixikebackend.api.LoginApi;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
 import org.shirakawatyu.handixikebackend.utils.Requests;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,15 +25,14 @@ import java.util.logging.Logger;
  */
 @Component("CasLoginApi")
 public class CasLoginApi implements LoginApi {
-    private static final String keyUrl = "http://cas.swust.edu.cn/authserver/getKey";
-    private static final String captchaUrl = "http://cas.swust.edu.cn/authserver/captcha";
-    private static final String loginUrl = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
-    private static final String logoutUrl = "http://myo.swust.edu.cn/mht_shall/a/logout";
+    private static final String KEY_URL = "http://cas.swust.edu.cn/authserver/getKey";
+    private static final String CAPTCHA_URL = "http://cas.swust.edu.cn/authserver/captcha";
+    private static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
 
     @Override
-    public Map<String, String> getKey(RestTemplate restTemplate) {
-        ResponseEntity<String> entity = Requests.get(keyUrl, "", restTemplate);
-        JSONObject key = JSON.parseObject(entity.getBody());
+    public Map<String, String> getKey(CookieStore cookieStore) {
+        String entity = Requests.getForString(KEY_URL, "", cookieStore);
+        JSONObject key = JSON.parseObject(entity);
         Map<String, String> map = new HashMap<>();
         map.put("modulus", key.getString("modulus"));
         map.put("exponent", key.getString("exponent"));
@@ -43,17 +40,16 @@ public class CasLoginApi implements LoginApi {
     }
 
     @Override
-    public byte[] getCaptcha(RestTemplate restTemplate) {
-        ResponseEntity<byte[]> entity = restTemplate.getForEntity(captchaUrl, byte[].class);
-        return entity.getBody();
+    public byte[] getCaptcha(CookieStore cookieStore) {
+        return Requests.getForBytes(CAPTCHA_URL, "", cookieStore);
     }
 
     @Override
-    public int login(String username, String password, String captcha, CookieStore cookieStore, RestTemplate restTemplate) {
-        ResponseEntity<String> res = restTemplate.getForEntity(loginUrl, String.class);
+    public int login(String username, String password, String captcha, CookieStore cookieStore) {
+        String body = Requests.getForString(LOGIN_URL, "", cookieStore);
         String execution;
         try {
-            Document parse = Jsoup.parse(Objects.requireNonNull(res.getBody()));
+            Document parse = Jsoup.parse(Objects.requireNonNull(body));
             Elements formCont = parse.getElementsByAttributeValue("name", "execution");
             execution = formCont.get(0).attr("value");
         }catch (Exception e) {
@@ -70,9 +66,11 @@ public class CasLoginApi implements LoginApi {
         map.add("password", password);
         map.add("captcha", captcha);
 
-        ResponseEntity<String> entity = null;
         try {
-            entity = Requests.post(loginUrl, map, restTemplate);
+            String entity = Requests.postForString(LOGIN_URL, map, cookieStore);
+            if (entity.contains("<title>西南科技大学教务管理系统 - 学生门户</title>") || cookieStore.getCookies().size() >= 3) {
+                return ResultCode.LOGIN_SUCCESS;
+            }
         } catch (HttpClientErrorException e) {
             int status = e.getStatusCode().value();
             if (cookieStore.getCookies().size() >= 3) {
@@ -83,21 +81,11 @@ public class CasLoginApi implements LoginApi {
                 return ResultCode.REMOTE_SERVICE_ERROR;
             }
         }
-        if (entity != null && entity.getBody() != null && entity.getBody().contains("<title>西南科技大学教务管理系统 - 学生门户</title>") || cookieStore.getCookies().size() >= 3) {
-            return ResultCode.LOGIN_SUCCESS;
-        }
         return ResultCode.LOGIN_FAIL;
     }
 
     @Override
-    public boolean logout(RestTemplate restTemplate) {
-        Requests.get(logoutUrl, "http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", restTemplate);
+    public boolean logout(CookieStore cookieStore) {
         return true;
-    }
-
-    @Override
-    public boolean loginCheck(RestTemplate template) {
-        ResponseEntity<String> entity = Requests.get("http://myo.swust.edu.cn/mht_shall/a/service/serviceFrontManage", "", template);
-        return entity.getBody().contains("<title>服务大厅</title>");
     }
 }

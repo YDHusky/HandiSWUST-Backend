@@ -7,7 +7,6 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.LoginApi;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
-import org.shirakawatyu.handixikebackend.config.InitRestTemplate;
 import org.shirakawatyu.handixikebackend.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,6 +19,9 @@ import java.util.Date;
 import java.util.Map;
 
 
+/**
+ * @author ShirakawaTyu
+ */
 @Service
 public class LoginServiceImpl implements LoginService {
     @Resource(name = "CasLoginApi")
@@ -30,45 +32,37 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public Result getKey(HttpSession session) {
-        RestTemplate restTemplate = (RestTemplate) session.getAttribute("template");
-        if (restTemplate == null) {
+        CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
+        if (cookieStore == null) {
             return null;
         }
-        Map<String, String> key = casLoginApi.getKey(restTemplate);
+        Map<String, String> key = casLoginApi.getKey(cookieStore);
         return Result.ok().data(key);
     }
 
     @Override
     public Result getCaptcha(HttpSession session) {
         BasicCookieStore cookieStore = new BasicCookieStore();
-        RestTemplate restTemplate = InitRestTemplate.init(cookieStore);
-        session.setAttribute("template", restTemplate);
         session.setAttribute("cookieStore", cookieStore);
-        byte[] captcha = casLoginApi.getCaptcha(restTemplate);
+        byte[] captcha = casLoginApi.getCaptcha(cookieStore);
         return Result.ok().data(Base64.getEncoder().encodeToString(captcha));
     }
 
 
     @Override
     public Result login(String username, String password, String captcha, HttpSession session) {
-        RestTemplate restTemplate = (RestTemplate) session.getAttribute("template");
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
-        if (restTemplate == null) {
+        if (cookieStore == null) {
             return null;
         }
-        int result = casLoginApi.login(username, password, captcha, cookieStore, restTemplate);
-        session.setAttribute("template", restTemplate);
+        int result = casLoginApi.login(username, password, captcha, cookieStore);
         if (result == ResultCode.LOGIN_SUCCESS) {
-            session.setAttribute("status", true);
-            session.setAttribute("cookieStore", cookieStore);
             session.setAttribute("no", username);
             // 统计每日登录人次
             String format = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             Thread.startVirtualThread(() -> redisTemplate.opsForHash().increment("count", format, 1));
-//            redisTemplate.opsForHash().increment("count", new SimpleDateFormat("yyyy-MM-dd").format(new Date()), 1);
             // 登录人数
             Thread.startVirtualThread(() -> redisTemplate.opsForHyperLogLog().add("DAU:" + format, username));
-//            redisTemplate.opsForHyperLogLog().add("DAU:" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()), username);
             return Result.ok().code(ResultCode.LOGIN_SUCCESS).msg("LOGIN SUCCESS");
         } else if (result == ResultCode.REMOTE_SERVICE_ERROR) {
             removeSession(session);
@@ -80,25 +74,22 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public Result logout(HttpSession session) {
-        RestTemplate restTemplate = (RestTemplate) session.getAttribute("template");
-        casLoginApi.logout(restTemplate);
+        CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
+        casLoginApi.logout(cookieStore);
         removeSession(session);
         return Result.ok().code(ResultCode.LOGOUT_SUCCESS).msg("LOGOUT SUCCESS");
     }
 
     @Override
     public Result loginCheck(HttpSession session) {
-        RestTemplate restTemplate = (RestTemplate) session.getAttribute("template");
-        if (session.getAttribute("status") == null || restTemplate == null) {
+        if (session.getAttribute("no") == null) {
             return Result.ok().code(ResultCode.LOGOUT).msg("LOGOUT");
         }
         return Result.ok().code(ResultCode.HAS_LOGIN).msg("LOGIN");
     }
 
     private void removeSession(HttpSession session) {
-        session.removeAttribute("status");
-        session.removeAttribute("template");
-        session.removeAttribute("cookieStore");
         session.removeAttribute("no");
+        session.removeAttribute("cookieStore");
     }
 }
