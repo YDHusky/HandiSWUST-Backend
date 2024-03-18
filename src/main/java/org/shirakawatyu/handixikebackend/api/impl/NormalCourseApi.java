@@ -8,13 +8,10 @@ import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.DateUtil;
 import org.shirakawatyu.handixikebackend.utils.Requests;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +39,9 @@ public class NormalCourseApi implements CourseApi {
         try {
             lessonsArray = JSON.parseArray(body, Lesson.class);
         } catch (JSONException e) {
-            Logger.getLogger("At NormalCourseApi JSONException => ").log(Level.WARNING, "错误JSON字符串：" + body);
+            if (!body.contains("非法登录，请通过正规途径登录")) {
+                Logger.getLogger("At NormalCourseApi JSONException => ").log(Level.WARNING, "错误JSON字符串：" + body);
+            }
             // 一般来说这个问题是由于登录过期引起的
             throw new NotLoginException();
         }
