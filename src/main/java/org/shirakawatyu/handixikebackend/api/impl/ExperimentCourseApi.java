@@ -70,8 +70,8 @@ public class ExperimentCourseApi implements CourseApi {
                     continue;
                 }
                 try {
-                    lessonsArray.add(new Lesson("0", tds.get(4).text(), tds.get(3).text(), timeItems[0],
-                            "0", tds.get(0).text(), timeItems[3], timeItems[1], timeItems[4],
+                    lessonsArray.add(new Lesson(tds.get(0).text(), tds.get(4).text(), tds.get(3).text(), timeItems[0],
+                            "0", tds.get(1).text(), timeItems[3], timeItems[1], timeItems[4],
                             "0", timeItems[2]));
                 } catch (Exception e) {
                     logger.log(Level.WARNING, String.join("-", "0",
