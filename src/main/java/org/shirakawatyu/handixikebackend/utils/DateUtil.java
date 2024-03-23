@@ -5,6 +5,8 @@ import org.shirakawatyu.handixikebackend.common.Const;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -33,5 +35,14 @@ public class DateUtil {
         gmtDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         String format = gmtDateFormat.format(new Date());
         return format.replace("GMT+08:00", "GMT+0800").trim();
+    }
+    public static long getTomorrow() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + 1);
+        return calendar.getTimeInMillis();
     }
 }

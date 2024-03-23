@@ -6,11 +6,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.service.LoginService;
+import org.shirakawatyu.handixikebackend.utils.DateUtil;
 import org.shirakawatyu.handixikebackend.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -26,8 +28,6 @@ public class LoginController {
     LoginService loginService;
     @Autowired
     JwtUtils jwtUtils;
-    @Value("${jwt.cookie-expire}")
-    String cookieExpire;
 
     @GetMapping("/key")
     public Result getKey(HttpSession session) {
@@ -46,7 +46,7 @@ public class LoginController {
         session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
         Cookie cookie = new Cookie("Token", jwtUtils.create(map));
         cookie.setPath("/");
-        cookie.setMaxAge(Integer.parseInt(cookieExpire));
+        cookie.setMaxAge((int) ((DateUtil.getTomorrow() - System.currentTimeMillis()) / 1000));
         response.addCookie(cookie);
         return result;
     }
