@@ -33,7 +33,7 @@ jobs:
       run: |
         docker build --tag backend:stable .
         docker tag backend:stable registry.cn-hangzhou.aliyuncs.com/handiswust/backend:stable
-        docker push registry.cn-shanghai.aliyuncs.com/handiswust/backend:stable
+        docker push registry.cn-hangzhou.aliyuncs.com/handiswust/backend:stable
           
           
   
