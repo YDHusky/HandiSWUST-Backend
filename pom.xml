@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.shirakawatyu</groupId>
     <artifactId>HandiXike-Backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>Stable</version>
     <name>HandiXike-Backend</name>
     <description>HandiXike-Backend</description>
     <properties>
