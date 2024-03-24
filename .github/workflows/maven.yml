@@ -31,8 +31,8 @@ jobs:
         
     - name: Build and Push Docker Image
       run: |
-        docker build -t registry.cn-hangzhou.aliyuncs.com/handiswust/backend:${pipeline} .
-        docker push registry.cn-shanghai.aliyuncs.com/handiswust/backend:${pipeline}
+        docker build -t registry.cn-hangzhou.aliyuncs.com/handiswust/backend:${{github.sha}} .
+        docker push registry.cn-shanghai.aliyuncs.com/handiswust/backend:${{github.sha}}
           
           
   
