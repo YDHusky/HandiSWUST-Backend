@@ -31,7 +31,5 @@ jobs:
         
     - name: Build and Push Docker Image
       run: |
-        docker build --tag backend:${{github.sha}} .
-        docker tag backend:${{github.sha}} registry.cn-hangzhou.aliyuncs.com/handiswust/backend:${{github.sha}}
-        docker tag registry.cn-hangzhou.aliyuncs.com/handiswust/backend:${{github.sha}} registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest
+        docker build --tag registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest .
         docker push registry.cn-hangzhou.aliyuncs.com/handiswust/backend:${{github.sha}}
