@@ -21,12 +21,26 @@ public class ScoreController {
     @Autowired
     ScoreService scoreService;
 
+    /**
+     * 分数信息
+     *
+     * @param session 会期
+     * @return {@code Result}
+     * @throws CircularRedirectException 循环重定向异常
+     */
     @GetMapping("/api/v2/extension/scores")
     @ResponseBody
     public Result scores(HttpSession session) throws CircularRedirectException {
         return scoreService.getScore(session);
     }
 
+    /**
+     * 获取绩点
+     *
+     * @param session 会期
+     * @return {@code Result}
+     * @throws CircularRedirectException 循环重定向异常
+     */
     @GetMapping("/api/v2/extension/gpa")
     @ResponseBody
     public Result gpa(HttpSession session) throws CircularRedirectException {

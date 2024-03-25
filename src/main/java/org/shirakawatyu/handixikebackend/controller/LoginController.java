@@ -29,16 +29,38 @@ public class LoginController {
     @Autowired
     JwtUtils jwtUtils;
 
+    /**
+     * 获取密钥
+     *
+     * @param session 会期
+     * @return {@code Result}
+     */
     @GetMapping("/key")
     public Result getKey(HttpSession session) {
         return loginService.getKey(session);
     }
 
+    /**
+     * 获取验证码
+     *
+     * @param session 会期
+     * @return {@code Result}
+     */
     @GetMapping("/captcha")
     public Result getCaptcha(HttpSession session) {
         return loginService.getCaptcha(session);
     }
 
+    /**
+     * 登录
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param captcha  验证码
+     * @param session  会期
+     * @param response 响应
+     * @return {@code Result}
+     */
     @PostMapping("/login")
     public Result login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpSession session, HttpServletResponse response) {
         Result result = loginService.login(username, password, captcha, session);
@@ -51,6 +73,13 @@ public class LoginController {
         return result;
     }
 
+    /**
+     * 注销
+     *
+     * @param session  会期
+     * @param response 响应
+     * @return {@code Result}
+     */
     @GetMapping("/logout")
     public Result logout(HttpSession session, HttpServletResponse response) {
         Cookie cookie = new Cookie("Token", null);
@@ -60,6 +89,12 @@ public class LoginController {
         return loginService.logout(session);
     }
 
+    /**
+     * 登录检查
+     *
+     * @param session 会期
+     * @return {@code Result}
+     */
     @GetMapping("/loginCheck")
     public Result loginCheck(HttpSession session) {
         return loginService.loginCheck(session);
