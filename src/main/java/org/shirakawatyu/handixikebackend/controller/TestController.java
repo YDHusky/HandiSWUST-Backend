@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.controller;
 
+import org.shirakawatyu.handixikebackend.common.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class TestController {
-    @GetMapping("/api/test/ping")
-    public String test() {
-        return "Pong!b";
+    @GetMapping("/api/v2/test/ping")
+    public Result test() {
+        return Result.ok().msg("Pong!");
     }
 }

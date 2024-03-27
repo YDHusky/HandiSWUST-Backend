@@ -32,6 +32,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/api/count")
                 .excludePathPatterns("/api/week")
                 .excludePathPatterns("/api/web/version")
-                .excludePathPatterns("/api/v2/course/local/**");
+                .excludePathPatterns("/api/v2/course/local/**")
+                .excludePathPatterns("/api/v2/test/ping");
     }
 }
