@@ -2,6 +2,7 @@ package org.shirakawatyu.handixikebackend.api.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.hc.client5.http.cookie.CookieStore;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ExamApi;
 import org.shirakawatyu.handixikebackend.pojo.Exam;
@@ -25,15 +26,7 @@ public class ExamApiImpl implements ExamApi {
         for (int p = 0; p < examNum; p++) {
             int aid = 8 + p * 9;
             if ("".equals(strings[aid])) {
-                ArrayList<Exam> re = new ArrayList<>();
-                int start = aid + 1;
-                int reNum = (strings.length - 8 - start) / 9;
-                for (int p2 = 0; p2 < reNum; p2++) {
-                    int aid2 = 8 + p2 * 9;
-                    Exam exam = new Exam(strings[start + aid2], strings[start + 1 + aid2], strings[start + 2 + aid2], strings[start + 3 + aid2], strings[start + 4 + aid2],
-                            strings[start + 5 + aid2], strings[start + 6 + aid2], strings[start + 7 + aid2], strings[start + 8 + aid2]);
-                    re.add(exam);
-                }
+                ArrayList<Exam> re = processExam(strings, aid);
                 map.put("补考(已考完的科目仍然显示的话，是教务系统的锅)", re);
                 break;
             }
@@ -43,6 +36,20 @@ public class ExamApiImpl implements ExamApi {
         }
         map.put("期末考试", exams);
         return JSONObject.toJSONString(map);
+    }
+
+    @NotNull
+    private static ArrayList<Exam> processExam(String[] strings, int aid) {
+        ArrayList<Exam> re = new ArrayList<>();
+        int start = aid + 1;
+        int reNum = (strings.length - 8 - start) / 9;
+        for (int p2 = 0; p2 < reNum; p2++) {
+            int aid2 = 8 + p2 * 9;
+            Exam exam = new Exam(strings[start + aid2], strings[start + 1 + aid2], strings[start + 2 + aid2], strings[start + 3 + aid2], strings[start + 4 + aid2],
+                    strings[start + 5 + aid2], strings[start + 6 + aid2], strings[start + 7 + aid2], strings[start + 8 + aid2]);
+            re.add(exam);
+        }
+        return re;
     }
 
 

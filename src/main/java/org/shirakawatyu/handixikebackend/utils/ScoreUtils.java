@@ -1,14 +1,17 @@
 package org.shirakawatyu.handixikebackend.utils;
 
+import lombok.experimental.UtilityClass;
 import org.shirakawatyu.handixikebackend.pojo.Score;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Queue;
 
+@UtilityClass
 public class ScoreUtils {
     /**
      * 必修课成绩过滤器
+     *
      * @param scores 成绩字符串队列
      * @param target 要放入成绩的map
      * @author ShirakawaTyu
@@ -44,7 +47,7 @@ public class ScoreUtils {
                     String[] s = course.split(" ");
                     if (s.length == 6 || s.length == 5) {
                         scoreList.add(new Score(s[0], s[2], s[3], s[4]));
-                    } else if (s.length == 7){
+                    } else if (s.length == 7) {
                         scoreList.add(new Score(s[0], s[2], s[3], s[5]));
                     }
                 }
@@ -67,6 +70,7 @@ public class ScoreUtils {
 
     /**
      * 选修课及体育课成绩过滤器
+     *
      * @param scores 成绩字符串队列
      * @param target 要放入成绩的map
      * @author ShirakawaTyu
@@ -102,6 +106,7 @@ public class ScoreUtils {
 
     /**
      * CET成绩过滤器
+     *
      * @param scores 成绩字符串队列
      * @param target 要放入成绩的map
      * @author ShirakawaTyu

@@ -1,6 +1,6 @@
 package org.shirakawatyu.handixikebackend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,12 +9,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 统计计数相关
- *
  */
 @Controller
+@RequiredArgsConstructor
 public class CountController {
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     /**
      * 统计日活

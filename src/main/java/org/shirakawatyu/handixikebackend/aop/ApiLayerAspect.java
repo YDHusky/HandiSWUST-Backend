@@ -15,6 +15,8 @@ import org.springframework.web.client.ResourceAccessException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,7 +26,7 @@ import java.util.logging.Logger;
 @Aspect
 @Component
 public class ApiLayerAspect {
-    private final HashMap<String, Count> errorCounts = new HashMap<>();
+    private final Map<String, Count> errorCounts = new ConcurrentHashMap<>();
     private final HashMap<String, Long> breakTime = new HashMap<>();
     @Value("${swust.api.breaker.threshold:20}")
     private int THRESHOLD;    // 超时阈值，单位：次
@@ -32,8 +34,10 @@ public class ApiLayerAspect {
     private long BREAK_MILLISECOND;    // 熔断时间，单位：ms
     @Value("${swust.api.breaker.circle:60000}")
     private long CIRCLE;    // 统计周期，单位：ms
+
     @Pointcut("execution(* org.shirakawatyu.handixikebackend.api.impl.*.*(..))")
-    public void exception() {}
+    public void exception() {
+    }
 
     @Around("exception()")
     public Object around(ProceedingJoinPoint point) {
@@ -91,7 +95,8 @@ public class ApiLayerAspect {
         }
     }
 
-    public static class CircuitBreakerException extends RuntimeException {}
+    public static class CircuitBreakerException extends RuntimeException {
+    }
 
     static class Count {
         int times;

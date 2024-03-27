@@ -3,7 +3,6 @@ package org.shirakawatyu.handixikebackend.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Setter;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +16,4 @@ public class Exam {
     private String location;
     private String seat;
     private String certainLocation;
-
-
 }

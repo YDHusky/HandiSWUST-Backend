@@ -51,8 +51,8 @@ public class CasLoginApi implements LoginApi {
         try {
             Document parse = Jsoup.parse(Objects.requireNonNull(body));
             Elements formCont = parse.getElementsByAttributeValue("name", "execution");
-            execution = formCont.get(0).attr("value");
-        }catch (Exception e) {
+            execution = formCont.getFirst().attr("value");
+        } catch (Exception e) {
             execution = "e1s1";
         }
 

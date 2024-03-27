@@ -1,23 +1,18 @@
 package org.shirakawatyu.handixikebackend.cache.impl;
 
-import com.alibaba.fastjson2.JSONException;
 import jakarta.annotation.Resource;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
-import org.shirakawatyu.handixikebackend.common.Result;
-import org.shirakawatyu.handixikebackend.common.ResultCode;
 import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,9 +26,9 @@ import java.util.logging.Logger;
  */
 @Service
 public class RawCourseCacheImpl implements RawCourseCache {
-    @Resource(name="NormalCourseApi")
+    @Resource(name = "NormalCourseApi")
     private CourseApi normalCourseApi;
-    @Resource(name="ExperimentCourseApi")
+    @Resource(name = "ExperimentCourseApi")
     private CourseApi experimentCourseApi;
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -64,6 +59,19 @@ public class RawCourseCacheImpl implements RawCourseCache {
     @CacheEvict(value = "Course", allEntries = true)
     @Override
     public void deleteCache() {
+//        TODO 异步unlink 减少slow log (有用但不多
+//        ScanOptions options = KeyScanOptions.scanOptions()
+//                .match("Course::*")
+//                .count(1000)
+//                .build();
+//        new ArrayList<>();
+//
+//        try (Cursor<String> cursor = redisTemplate.scan(options)) {
+//            while (cursor.hasNext()) {
+//                redisTemplate.unlink(cursor.next());
+//            }
+//        }
+
         Logger.getLogger("RawCourseCacheImpl => ").log(Level.INFO, "已清理缓存");
     }
 

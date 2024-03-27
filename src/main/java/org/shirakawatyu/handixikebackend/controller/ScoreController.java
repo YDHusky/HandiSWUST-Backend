@@ -1,10 +1,8 @@
 package org.shirakawatyu.handixikebackend.controller;
 
-import jakarta.servlet.http.HttpSession;
-import org.apache.hc.client5.http.CircularRedirectException;
+import lombok.RequiredArgsConstructor;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.service.ScoreService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,38 +10,35 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 与成绩相关的接口
+ *
  * @author Alice-in-Oven
  * @since 2022/10/2 15:00
  */
 @RestController
+@RequiredArgsConstructor
 public class ScoreController {
 
-    @Autowired
-    ScoreService scoreService;
+    private final ScoreService scoreService;
 
     /**
      * 分数信息
      *
-     * @param session 会期
      * @return {@code Result}
-     * @throws CircularRedirectException 循环重定向异常
      */
     @GetMapping("/api/v2/extension/scores")
     @ResponseBody
-    public Result scores(HttpSession session) throws CircularRedirectException {
-        return scoreService.getScore(session);
+    public Result scores() {
+        return scoreService.getScore();
     }
 
     /**
      * 获取绩点
      *
-     * @param session 会期
      * @return {@code Result}
-     * @throws CircularRedirectException 循环重定向异常
      */
     @GetMapping("/api/v2/extension/gpa")
     @ResponseBody
-    public Result gpa(HttpSession session) throws CircularRedirectException {
-        return scoreService.getGPA(session);
+    public Result gpa() {
+        return scoreService.getGPA();
     }
 }

@@ -2,16 +2,15 @@ package org.shirakawatyu.handixikebackend.service.impl;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.LoginApi;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
 import org.shirakawatyu.handixikebackend.service.LoginService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -23,15 +22,16 @@ import java.util.Map;
  * @author ShirakawaTyu
  */
 @Service
+@RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
     @Resource(name = "CasLoginApi")
     LoginApi casLoginApi;
 
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
+    private final HttpSession session;
 
     @Override
-    public Result getKey(HttpSession session) {
+    public Result getKey() {
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
         if (cookieStore == null) {
             return null;
@@ -41,7 +41,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public Result getCaptcha(HttpSession session) {
+    public Result getCaptcha() {
         BasicCookieStore cookieStore = new BasicCookieStore();
         session.setAttribute("cookieStore", cookieStore);
         byte[] captcha = casLoginApi.getCaptcha(cookieStore);
@@ -50,7 +50,7 @@ public class LoginServiceImpl implements LoginService {
 
 
     @Override
-    public Result login(String username, String password, String captcha, HttpSession session) {
+    public Result login(String username, String password, String captcha) {
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
         if (cookieStore == null) {
             return null;
@@ -65,30 +65,30 @@ public class LoginServiceImpl implements LoginService {
             Thread.startVirtualThread(() -> redisTemplate.opsForHyperLogLog().add("DAU:" + format, username));
             return Result.ok().code(ResultCode.LOGIN_SUCCESS).msg("LOGIN SUCCESS");
         } else if (result == ResultCode.REMOTE_SERVICE_ERROR) {
-            removeSession(session);
+            removeSession();
             return Result.fail().code(ResultCode.REMOTE_SERVICE_ERROR).msg("REMOTE SERVICE ERROR");
         }
-        removeSession(session);
+        removeSession();
         return Result.fail().code(ResultCode.LOGIN_FAIL).msg("LOGIN FAIL");
     }
 
     @Override
-    public Result logout(HttpSession session) {
+    public Result logout() {
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
         casLoginApi.logout(cookieStore);
-        removeSession(session);
+        removeSession();
         return Result.ok().code(ResultCode.LOGOUT_SUCCESS).msg("LOGOUT SUCCESS");
     }
 
     @Override
-    public Result loginCheck(HttpSession session) {
+    public Result loginCheck() {
         if (session.getAttribute("no") == null) {
             return Result.ok().code(ResultCode.LOGOUT).msg("LOGOUT");
         }
         return Result.ok().code(ResultCode.HAS_LOGIN).msg("LOGIN");
     }
 
-    private void removeSession(HttpSession session) {
+    private void removeSession() {
         session.removeAttribute("no");
         session.removeAttribute("cookieStore");
     }

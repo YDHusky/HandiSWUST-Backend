@@ -5,30 +5,35 @@ import cn.hutool.jwt.JWTUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.shirakawatyu.handixikebackend.config.interfaces.MatchableHandlerInterceptor;
 import org.shirakawatyu.handixikebackend.utils.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author ShirakawaTyu
  */
 @Component
-public class SessionInterceptor implements HandlerInterceptor {
-    @Autowired
-    JwtUtils jwtUtils;
+public class SessionInterceptor implements MatchableHandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("Token".equals(cookie.getName()) && jwtUtils.verify(cookie.getValue())) {
+                if ("Token".equals(cookie.getName()) && JwtUtils.verify(cookie.getValue())) {
                     JWT jwt = JWTUtil.parseToken(cookie.getValue());
-                    jwtUtils.getPayloads(jwt).forEach((key, value) -> request.getSession().setAttribute(key, value));
+                    JwtUtils.getPayloads(jwt).forEach((key, value) -> request.getSession().setAttribute(key, value));
                 }
             }
         }
         return true;
+    }
+
+    @Override
+    public List<String> includes() {
+        return Collections.singletonList("/**");
     }
 }

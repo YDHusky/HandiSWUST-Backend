@@ -3,8 +3,8 @@ package org.shirakawatyu.handixikebackend.service.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.ScoreApi;
 import org.shirakawatyu.handixikebackend.common.Result;
@@ -18,13 +18,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class ScoreServiceImpl implements ScoreService {
 
-    @Resource(name = "MatrixScoreApi")
-    ScoreApi scoreApi;
+    private final ScoreApi scoreApi;
+    private final HttpSession session;
 
     @Override
-    public Result getScore(HttpSession session) {
+    public Result getScore() {
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
         LinkedHashMap<String, ArrayList<Score>> score = scoreApi.getScore(cookieStore);
         if (score == null) {
@@ -34,7 +35,7 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     @Override
-    public Result getGPA(HttpSession session) {
+    public Result getGPA() {
         CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
         GradePointAverage gradePointAverage = scoreApi.getGradePointAverage(cookieStore);
         if (gradePointAverage != null) {

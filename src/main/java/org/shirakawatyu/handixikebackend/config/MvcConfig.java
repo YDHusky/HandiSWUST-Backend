@@ -1,37 +1,29 @@
 package org.shirakawatyu.handixikebackend.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.shirakawatyu.handixikebackend.config.interfaces.MatchableHandlerInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author ShirakawaTyu
  */
 @Configuration
+@RequiredArgsConstructor
 public class MvcConfig implements WebMvcConfigurer {
-    @Autowired
-    TimeInterceptor timeInterceptor;
-    @Autowired
-    LoginInterceptor loginInterceptor;
-    @Autowired
-    SessionInterceptor sessionInterceptor;
+    private final List<MatchableHandlerInterceptor> interceptors;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(sessionInterceptor)
-                .addPathPatterns("/**");
-        registry.addInterceptor(timeInterceptor)
-                .excludePathPatterns("/api/v2/login/loginCheck")
-                .excludePathPatterns("/api/count")
-                .excludePathPatterns("/api/week")
-                .excludePathPatterns("/api/web/version")
-                .excludePathPatterns("/api/v2/course/local/**");
-        registry.addInterceptor(loginInterceptor)
-                .excludePathPatterns("/api/v2/login/**")
-                .excludePathPatterns("/api/count")
-                .excludePathPatterns("/api/week")
-                .excludePathPatterns("/api/web/version")
-                .excludePathPatterns("/api/v2/course/local/**");
+
+        Consumer<MatchableHandlerInterceptor> register = (i) -> registry.addInterceptor(i)
+                .excludePathPatterns(i.excludes())
+                .addPathPatterns(i.includes());
+
+        interceptors.forEach(register);
     }
 }

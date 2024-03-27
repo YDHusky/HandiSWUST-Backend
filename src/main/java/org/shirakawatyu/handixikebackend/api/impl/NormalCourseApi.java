@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 @Component("NormalCourseApi")
 public class NormalCourseApi implements CourseApi {
     private static final String baseUrl = "http://sjjx.swust.edu.cn";
+
     @Override
     public List<Lesson> getCourse(CookieStore cookieStore) {
         Requests.getForBytes(baseUrl + "/swust", "", cookieStore);

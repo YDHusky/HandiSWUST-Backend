@@ -1,7 +1,9 @@
 package org.shirakawatyu.handixikebackend.common;
 
+import lombok.experimental.UtilityClass;
 import org.shirakawatyu.handixikebackend.utils.DateUtil;
 
+@UtilityClass
 public class Const {
     public static final String CURRENT_TERM = "2023-2024-2";
     public static final long CURRENT_TERM_LONG = 202320242;    // 2023-2024-1

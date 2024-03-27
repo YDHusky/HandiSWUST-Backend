@@ -1,8 +1,8 @@
 package org.shirakawatyu.handixikebackend.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
 import org.shirakawatyu.handixikebackend.common.Result;
@@ -10,10 +10,8 @@ import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.service.CourseService;
 import org.shirakawatyu.handixikebackend.utils.DateUtil;
 import org.shirakawatyu.handixikebackend.utils.LessonUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -21,14 +19,15 @@ import java.util.List;
  * @author ShirakawaTyu
  */
 @Service
+@RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
-    @Autowired
-    RawCourseCache rawCourse;
+    private final RawCourseCache rawCourse;
+    private final HttpSession session;
 
     // 不做处理返回所有课程的原值
     @Override
-    public Result course(HttpSession session, String no) {
+    public Result course(String no) {
         List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         JSONArray lessonsArray = new JSONArray(lessonList);
         if (!lessonsArray.isEmpty()) {
@@ -37,17 +36,17 @@ public class CourseServiceImpl implements CourseService {
         return Result.fail();
     }
 
-    @Cacheable(value = "Course", key = "'c'+#p1", unless = "#result.data eq '[]'")
+    @Cacheable(value = "Course", key = "'c'+#p0", unless = "#result.data eq '[]'")
     @Override
-    public Result courseCurWeek(HttpSession session, String no) {
+    public Result courseCurWeek(String no) {
         List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         String s = LessonUtils.simpleSelectWeek(Integer.parseInt(DateUtil.curWeek()), lessonList);
         return Result.ok().data(s);
     }
 
-    @Cacheable(value = "Course", key = "'s'+#p2+'s'+#p1", unless = "#result.data eq '[]'")
     @Override
-    public Result courseSelectedWeek(HttpSession session, String no, int selectedWeek) {
+    @Cacheable(value = "Course", key = "'s'+#p1+'s'+#p0", unless = "#result.data eq '[]'")
+    public Result courseSelectedWeek(String no, int selectedWeek) {
         List<Lesson> lessonList = rawCourse.getRawCourse((CookieStore) session.getAttribute("cookieStore"), no);
         String s = LessonUtils.simpleSelectWeek(selectedWeek, lessonList);
         return Result.ok().data(s);

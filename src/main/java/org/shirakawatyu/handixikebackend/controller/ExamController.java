@@ -1,8 +1,8 @@
 package org.shirakawatyu.handixikebackend.controller;
 
-import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.shirakawatyu.handixikebackend.common.Result;
-import org.shirakawatyu.handixikebackend.service.impl.ExamServiceImpl;
+import org.shirakawatyu.handixikebackend.service.ExamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2024/03/25
  */
 @RestController
+@RequiredArgsConstructor
 public class ExamController {
 
     @Autowired
-    ExamServiceImpl examService;
+    private final ExamService examService;
 
     /**
      * 获取考试信息
@@ -27,8 +28,8 @@ public class ExamController {
      * @return {@code Result}
      */
     @RequestMapping("/api/v2/extension/getExam")
-    public Result getExam(HttpSession session){
-        return examService.getExam(session);
+    public Result getExam() {
+        return examService.getExam();
 
     }
 }

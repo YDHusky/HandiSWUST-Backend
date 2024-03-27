@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.utils;
 
 import com.alibaba.fastjson2.JSON;
+import lombok.experimental.UtilityClass;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 
 import java.util.List;
@@ -8,9 +9,11 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@UtilityClass
 public class LessonUtils {
     /**
      * 将两节课合并为一节
+     *
      * @param lesson1 课程1
      * @param lesson2 课程2
      * @return Lesson
@@ -45,14 +48,15 @@ public class LessonUtils {
 
     /**
      * 将节数大于2的课拆成多节
-     * @param lesson 课程
+     *
+     * @param lesson   课程
      * @param iterator 课程列表迭代器
      * @author ShirakawaTyu
      */
     public static void split(Lesson lesson, ListIterator<Lesson> iterator) {
         int start = Integer.parseInt(lesson.getSection_start());
         int end = Integer.parseInt(lesson.getSection_end());
-        for (int i = start; i < end; i+=2) {
+        for (int i = start; i < end; i += 2) {
             iterator.add(new Lesson(lesson.getJw_course_code(),
                     lesson.getBase_teacher_name(),
                     lesson.getBase_room_name(),
@@ -67,8 +71,9 @@ public class LessonUtils {
         }
     }
 
-    /** 
+    /**
      * 将形如 "9周星期二11-12节" 的时间字符串转换为 "[9, 2, 11, 12, 2]"
+     *
      * @param time 时间字符串，形如 "9周星期二11-12节"
      * @return String[] 格式为 "[周, 星期, 开始节数, 结束节数, 总课程长度]"
      * @author ShirakawaTyu
@@ -88,7 +93,7 @@ public class LessonUtils {
                 default -> {
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             Logger.getLogger("timeProcess,weekday =>").log(Level.WARNING, time);
             return null;
         }
@@ -100,18 +105,19 @@ public class LessonUtils {
 
     /**
      * 判断指定周数是否在所给的范围内
-     * @param week 周数范围字符串，形如 1-12
+     *
+     * @param week    周数范围字符串，形如 1-12
      * @param curWeek 指定周数
      * @return boolean
      * @author ShirakawaTyu
      */
     public static boolean isCurWeek(String week, int curWeek) {
-        if(week.contains("-")) {
+        if (week.contains("-")) {
             String[] strings = week.split("-");
-            if(strings.length == 2) {
+            if (strings.length == 2) {
                 return curWeek >= Integer.parseInt(strings[0]) && curWeek <= Integer.parseInt(strings[1]);
             }
-        }else {
+        } else {
             return curWeek == Integer.parseInt(week);
         }
         return false;
@@ -119,6 +125,7 @@ public class LessonUtils {
 
     /**
      * 把不属于所选周的课程删掉，只留下所选周的
+     *
      * @param selectedWeek 选择的周数
      * @param lessonsArray 要筛选的课程列表
      * @author ShirakawaTyu
@@ -149,15 +156,16 @@ public class LessonUtils {
 
     /**
      * 对节数大于2的课程切割，对冲突的课程合并
+     *
      * @param lessonsArray 要处理的课程列表
      * @author ShirakawaTyu
      */
     public static void process(List<Lesson> lessonsArray) {
         ListIterator<Lesson> iterator = lessonsArray.listIterator();
         // 节数大于2处理，将其切割成两节
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Lesson lesson = iterator.next();
-            if(Integer.parseInt(lesson.getSection_end()) - Integer.parseInt(lesson.getSection_start()) > 1) {
+            if (Integer.parseInt(lesson.getSection_end()) - Integer.parseInt(lesson.getSection_start()) > 1) {
                 iterator.remove();
                 LessonUtils.split(lesson, iterator);
             }
@@ -179,7 +187,7 @@ public class LessonUtils {
         }
         iterator = lessonsArray.listIterator();
         while (iterator.hasNext()) {
-            if(iterator.next() == null) {
+            if (iterator.next() == null) {
                 iterator.remove();
             }
         }
@@ -187,6 +195,7 @@ public class LessonUtils {
 
     /**
      * 简单的获得所选周课程的方法
+     *
      * @param selectedWeek 选择的周数
      * @param lessonsArray 课程列表
      * @return String
@@ -195,7 +204,7 @@ public class LessonUtils {
     public static String simpleSelectWeek(int selectedWeek, List<Lesson> lessonsArray) {
         LessonUtils.onlySelectWeek(selectedWeek, lessonsArray);
         LessonUtils.process(lessonsArray);
-        if(lessonsArray.size() > 0) {
+        if (lessonsArray.size() > 0) {
             return JSON.toJSONString(lessonsArray);
         }
         return "[]";

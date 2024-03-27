@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.utils;
 
+import lombok.experimental.UtilityClass;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
  * @author ShirakawaTyu
  * @since 2022/10/1 17:45
  */
+@UtilityClass
 public class Requests {
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0";
 

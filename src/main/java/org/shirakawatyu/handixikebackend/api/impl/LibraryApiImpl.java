@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.api.impl;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.jsoup.Jsoup;
@@ -18,10 +19,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Component("libraryApi")
+@RequiredArgsConstructor
 public class LibraryApiImpl implements LibraryApi {
 
+    private final HttpSession session;
+
     @Override
-    public ArrayList<Library> getBorrows(BasicCookieStore cookieStore, HttpSession session) {
+    public ArrayList<Library> getBorrows(BasicCookieStore cookieStore) {
 
         ArrayList<Library> books = new ArrayList<>();
         Logger logger = Logger.getLogger("LibraryApi.getBorrow");
@@ -72,7 +76,7 @@ public class LibraryApiImpl implements LibraryApi {
     }
 
     @Override
-    public String queryBooks(HttpSession session, String bookName, int page) throws IOException {
+    public String queryBooks(String bookName, int page) throws IOException {
         String[] token = (String[]) session.getAttribute("token");
         String requestBody = "{\"searchWords\":[{\"fieldList\":[{\"fieldCode\":\"\",\"fieldValue\":\"" + bookName + "\"}]}],\"filters\":[],\"limiter\":[],\"sortField\":\"relevance\",\"sortType\":\"desc\",\"pageSize\":20,\"pageCount\":" + page + ",\"locale\":\"\",\"first\":true}";
         String url = "http://202.115.162.45:8080/opac/ajax_search_adv.php";
@@ -81,7 +85,7 @@ public class LibraryApiImpl implements LibraryApi {
     }
 
     @Override
-    public String getLocationOfBook(HttpSession session, String id) throws IOException {
+    public String getLocationOfBook(String id) throws IOException {
         String[] token = (String[]) session.getAttribute("token");
         String url = "http://202.115.162.45:8080/opac/ajax_item.php?marc_no=" + id;
         Document document = Jsoup.connect(url).cookie(token[0], token[1]).get();

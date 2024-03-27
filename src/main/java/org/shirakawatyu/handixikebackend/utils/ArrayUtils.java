@@ -1,16 +1,18 @@
 package org.shirakawatyu.handixikebackend.utils;
 
+import lombok.experimental.UtilityClass;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@UtilityClass
 public class ArrayUtils {
 
     // 固定添加至倒数第二项
     public static <T> void addSecondLast(ArrayList<T> arrayList, T o) {
-        int lastIndex = arrayList.size() - 1 ;
+        int lastIndex = arrayList.size() - 1;
         if (lastIndex < 0) {
             arrayList.add(o);
             return;
@@ -31,7 +33,7 @@ public class ArrayUtils {
         boolean flag = false;
         for (int i = 0; i < jsonArray.size(); i++) {
             Lesson o = jsonArray.get(i);
-            if(o.getJw_course_name() == null) {
+            if (o.getJw_course_name() == null) {
                 o.setJw_course_name(map.get(o.getJw_course_code()));
                 jsonArray.set(jsonArray.indexOf(o), o);
                 flag = true;
