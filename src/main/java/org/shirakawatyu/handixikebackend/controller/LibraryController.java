@@ -25,10 +25,9 @@ public class LibraryController {
      * 获取图书信息
      *
      * @return {@code Result}
-     * @throws IOException io异常
      */
     @GetMapping("/api/v2/extension/library")
-    public Result getLibraryInfo() throws IOException {
+    public Result getLibraryInfo() {
         return libraryService.getLibrary();
     }
 

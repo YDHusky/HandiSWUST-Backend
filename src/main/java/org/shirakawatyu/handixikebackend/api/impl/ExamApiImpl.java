@@ -2,7 +2,6 @@ package org.shirakawatyu.handixikebackend.api.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.hc.client5.http.cookie.CookieStore;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ExamApi;
 import org.shirakawatyu.handixikebackend.pojo.Exam;
@@ -38,7 +37,6 @@ public class ExamApiImpl implements ExamApi {
         return JSONObject.toJSONString(map);
     }
 
-    @NotNull
     private static ArrayList<Exam> processExam(String[] strings, int aid) {
         ArrayList<Exam> re = new ArrayList<>();
         int start = aid + 1;
