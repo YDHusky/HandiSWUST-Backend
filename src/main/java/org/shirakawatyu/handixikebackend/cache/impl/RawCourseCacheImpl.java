@@ -1,13 +1,12 @@
 package org.shirakawatyu.handixikebackend.cache.impl;
 
-import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
 import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -25,30 +24,26 @@ import java.util.logging.Logger;
  * @author ShirakawaTyu
  */
 @Service
+@RequiredArgsConstructor
 public class RawCourseCacheImpl implements RawCourseCache {
-    @Resource(name = "NormalCourseApi")
-    private CourseApi normalCourseApi;
-    @Resource(name = "ExperimentCourseApi")
-    private CourseApi experimentCourseApi;
-    @Autowired
-    StringRedisTemplate redisTemplate;
+
+    private final List<CourseApi> courseApis;
+    private final StringRedisTemplate redisTemplate;
 
     @Cacheable(value = "Course", key = "'r'+#p1", unless = "null == #result")
     @Override
     public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
-        HashSet<Lesson> lessonsArray = new HashSet<>();
-        List<Lesson> normalCourse;
-        List<Lesson> experimentCourse;
+        HashSet<Lesson> lessonsResultSet = new HashSet<>();
         try {
-            normalCourse = normalCourseApi.getCourse(cookieStore);
-            experimentCourse = experimentCourseApi.getCourse(cookieStore);
+            for (CourseApi api : courseApis) {
+                lessonsResultSet.addAll(api.getCourse(cookieStore));
+            }
         } catch (Exception e) {
             throw new NotLoginException();
         }
-        lessonsArray.addAll(normalCourse);
-        lessonsArray.addAll(experimentCourse);
-        if (!lessonsArray.isEmpty()) {
-            ArrayList<Lesson> lessonList = new ArrayList<>(lessonsArray);
+
+        if (!lessonsResultSet.isEmpty()) {
+            ArrayList<Lesson> lessonList = new ArrayList<>(lessonsResultSet);
             ArrayUtils.nullObjChk(lessonList);
             return lessonList;
         }

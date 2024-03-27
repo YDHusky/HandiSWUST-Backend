@@ -5,6 +5,7 @@ import cn.hutool.jwt.JWTUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.shirakawatyu.handixikebackend.config.interfaces.MatchableHandlerInterceptor;
 import org.shirakawatyu.handixikebackend.utils.JwtUtils;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,8 @@ public class SessionInterceptor implements MatchableHandlerInterceptor {
             for (Cookie cookie : cookies) {
                 if ("Token".equals(cookie.getName()) && JwtUtils.verify(cookie.getValue())) {
                     JWT jwt = JWTUtil.parseToken(cookie.getValue());
-                    JwtUtils.getPayloads(jwt).forEach((key, value) -> request.getSession().setAttribute(key, value));
+                    HttpSession session = request.getSession();
+                    JwtUtils.getPayloads(jwt).forEach(session::setAttribute);
                 }
             }
         }
