@@ -9,6 +9,7 @@ import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
@@ -38,7 +39,7 @@ public class Requests {
 
     public static String getForString(String url, String referer, CookieStore cookieStore) {
         return getByHttpClient(url, referer, cookieStore, classicHttpResponse -> {
-            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            HttpEntity entity = classicHttpResponse.getEntity();
             String encoding = entity.getContentEncoding();
             if (encoding == null) {
                 encoding = "UTF-8";
@@ -49,14 +50,14 @@ public class Requests {
 
     public static byte[] getForBytes(String url, String referer, CookieStore cookieStore) {
         return getByHttpClient(url, referer, cookieStore, classicHttpResponse -> {
-            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            HttpEntity entity = classicHttpResponse.getEntity();
             return entity.getContent().readAllBytes();
         });
     }
 
     public static String postForString(String url, MultiValueMap<String, String> data, CookieStore cookieStore) {
         return postByHttpClient(url, cookieStore, data, classicHttpResponse -> {
-            org.apache.hc.core5.http.HttpEntity entity = classicHttpResponse.getEntity();
+            HttpEntity entity = classicHttpResponse.getEntity();
             String encoding = entity.getContentEncoding();
             if (encoding == null) {
                 encoding = "UTF-8";
@@ -84,7 +85,7 @@ public class Requests {
         httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
         httpPost.addHeader("User-Agent", USER_AGENT);
         ArrayList<NameValuePair> params = new ArrayList<>();
-        data.forEach((key, value) -> params.add(new BasicNameValuePair(key, value.get(0))));
+        data.forEach((key, value) -> params.add(new BasicNameValuePair(key, value.getFirst())));
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
             return client.execute(httpPost, handler);

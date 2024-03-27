@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 
-@Data
+@Data(staticConstructor = "of")
 @Accessors(chain = true)
 public class Result implements Serializable {
     @Serial
@@ -16,27 +16,24 @@ public class Result implements Serializable {
     private String msg;
     private Object data;
 
-    private Result() {
-    }
+
 
     public static Result ok() {
-        Result result = new Result();
-        result.setSuccess(true);
-        return result;
+        return Result.of().setSuccess(true);
     }
 
     public static Result fail() {
-        Result result = new Result();
-        result.setSuccess(false);
-        return result;
+        return Result.of().setSuccess(false);
     }
 
     public Result data(Object data) {
         return setData(data);
     }
+
     public Result code(int code) {
         return setCode(code);
     }
+
     public Result msg(String msg) {
         return setMsg(msg);
     }
