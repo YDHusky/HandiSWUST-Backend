@@ -55,7 +55,6 @@ public class LoginServiceImpl implements LoginService {
         if (cookieStore == null) {
             return null;
         }
-        System.out.println(username + " " + password + " " + captcha);
         int result = casLoginApi.login(username, password, captcha, cookieStore);
         if (result == ResultCode.LOGIN_SUCCESS) {
             session.setAttribute("no", username);
