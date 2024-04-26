@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ExamApi;
+import org.shirakawatyu.handixikebackend.exception.OutOfCreditException;
 import org.shirakawatyu.handixikebackend.pojo.Exam;
 import org.shirakawatyu.handixikebackend.utils.Requests;
 import org.springframework.stereotype.Component;
@@ -55,7 +56,10 @@ public class ExamApiImpl implements ExamApi {
     public String getExam(CookieStore cookieStore) {
         Logger log = Logger.getLogger("ExamApiImpl.getExam :  ");
         try {
-            Requests.getForBytes("https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT", "", cookieStore);
+            String authInfo = Requests.getForString("https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT", "", cookieStore);
+            if (authInfo.contains("账号禁止使用")) {
+                throw new OutOfCreditException();
+            }
             String body = Requests.getForString("https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:examTable", "", cookieStore);
             String info = Jsoup.parse(body).getElementsByTag("td").text();
             String[] s = info.split(" ");

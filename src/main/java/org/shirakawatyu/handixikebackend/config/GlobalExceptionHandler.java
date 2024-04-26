@@ -4,9 +4,11 @@ import org.shirakawatyu.handixikebackend.aop.ApiLayerAspect;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
 import org.shirakawatyu.handixikebackend.exception.NotLoginException;
+import org.shirakawatyu.handixikebackend.exception.OutOfCreditException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.net.SocketTimeoutException;
@@ -17,6 +19,7 @@ import java.util.logging.Logger;
  * @author ShirakawaTyu
  */
 @ControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = SocketTimeoutException.class)
     public Result SocketTimeoutExceptionHandler(SocketTimeoutException ste) {
@@ -53,5 +56,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = NotLoginException.class)
     public Result NotLoginExceptionHandler() {
         return Result.fail().code(ResultCode.LOGOUT).msg("LOGOUT");
+    }
+
+    @ExceptionHandler(value = OutOfCreditException.class)
+    public Result OutOfCreditExceptionHandler() {
+        return Result.fail().code(ResultCode.OUT_OF_CREDIT).msg("OUT_OF_CREDIT");
     }
 }
