@@ -72,6 +72,7 @@ public class CasLoginApi implements LoginApi {
                 return ResultCode.LOGIN_SUCCESS;
             }
         } catch (HttpClientErrorException e) {
+            Logger.getLogger("CasLoginApi.login => ").log(Level.WARNING, username + "\n" + body);
             int status = e.getStatusCode().value();
             if (cookieStore.getCookies().size() >= 3) {
                 Logger.getLogger("CasLoginApi.login => ").log(Level.WARNING, "一站式大厅崩溃，但登录接口正常");
