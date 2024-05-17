@@ -24,11 +24,13 @@ import java.util.logging.Logger;
 @Component("ExperimentCourseApi")
 public class ExperimentCourseApi implements CourseApi {
     private static final String BASE_URL = "http://sjjx.swust.edu.cn";
+    private static final String AUTH_URL = "http://cas.swust.edu.cn/authserver/login?service=http://sjjx.swust.edu.cn/swust";
     private static final String REFERER = BASE_URL + "/teachn/teachnAction/index.action";
 
     @Override
     public List<Lesson> getCourse(CookieStore cookieStore) {
         Logger logger = Logger.getLogger("ExperimentCourseApi.getCourse => ");
+        Requests.getForBytes(BASE_URL + "/swust", "", cookieStore);
         // 拿到实验课表
         // 预请求一次得到页数
         String body = Requests.getForString(getExperimentApiUrl("2", Const.CURRENT_TERM), REFERER, cookieStore);
