@@ -58,6 +58,7 @@ public class LoginController {
      */
     @PostMapping("/login")
     public Result login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpServletResponse response) {
+        username = username.replaceAll("[^0-9]", "");
         Result result = loginService.login(username, password, captcha);
         HashMap<String, Object> map = new HashMap<>();
         session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
