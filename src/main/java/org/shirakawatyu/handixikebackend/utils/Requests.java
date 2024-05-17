@@ -7,6 +7,7 @@ import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpEntity;
@@ -34,6 +35,8 @@ public class Requests {
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(3000))
             .setResponseTimeout(Timeout.ofMilliseconds(3000))
             .setCircularRedirectsAllowed(true)
+            .setRedirectsEnabled(true)
+            .setMaxRedirects(32)
             .setCookieSpec(StandardCookieSpec.RELAXED)
             .build();
 
@@ -73,7 +76,12 @@ public class Requests {
         }
         httpGet.addHeader("Content-Type", "application/json");
         httpGet.addHeader("User-Agent", USER_AGENT);
-        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
+        try (CloseableHttpClient client = HttpClients
+                .custom()
+                .setDefaultRequestConfig(requestConfig)
+                .setRedirectStrategy(new DefaultRedirectStrategy())
+                .setDefaultCookieStore(cookieStore)
+                .build()) {
             return client.execute(httpGet, handler);
         } catch (IOException e) {
             throw new RequestException(e);
@@ -87,7 +95,12 @@ public class Requests {
         ArrayList<NameValuePair> params = new ArrayList<>();
         data.forEach((key, value) -> params.add(new BasicNameValuePair(key, value.getFirst())));
         httpPost.setEntity(new UrlEncodedFormEntity(params));
-        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build()) {
+        try (CloseableHttpClient client = HttpClients
+                .custom()
+                .setDefaultRequestConfig(requestConfig)
+                .setRedirectStrategy(new DefaultRedirectStrategy())
+                .setDefaultCookieStore(cookieStore)
+                .build()) {
             return client.execute(httpPost, handler);
         } catch (IOException e) {
             throw new RequestException(e);
