@@ -10,10 +10,12 @@ import org.shirakawatyu.handixikebackend.utils.Requests;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 @Component("examApi")
 public class ExamApiImpl implements ExamApi {
@@ -21,8 +23,8 @@ public class ExamApiImpl implements ExamApi {
 
         ArrayList<Exam> exams = new ArrayList<>();
         HashMap<String, List<Exam>> map = new HashMap<>();
-
         int examNum = (strings.length - 8) / 9;
+        System.out.println(examNum);
         for (int p = 0; p < examNum; p++) {
             int aid = 8 + p * 9;
             if ("".equals(strings[aid])) {
@@ -63,10 +65,28 @@ public class ExamApiImpl implements ExamApi {
             String body = Requests.getForString("https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:examTable", "", cookieStore);
             String info = Jsoup.parse(body).getElementsByTag("td").text();
             String[] s = info.split(" ");
+            int errCNT = 0;
+            if((s.length-8)%9!=0){
+                int examNum = (s.length - 8) / 9;
+                for (int p = 0; p < examNum; p++) {
+                    int aid = 8 + p * 9;
+                    if(s[aid+8].length()<5){//小于五就证明有多余空格
+                        errCNT++;
+                        s[aid+1] = s[aid+1]+"-"+s[aid+2];
+                        for(int i = aid+2;i < s.length-1;i++){
+                            s[i] = s[i+1];
+                        }
+                    }
+                }
+            }
+            String [] ns = new String[s.length-errCNT];
+            for (int i = 0;i < s.length-errCNT;i ++){
+                ns[i] = s[i];
+            }
             if (s.length < 9) {
                 return "no data";
             }
-            return setExamList(s);
+            return setExamList(ns);
         } catch (Exception e) {
             log.log(Level.SEVERE, "可能是登录凭证过期了，八成不会出这个问题");
             throw e;
