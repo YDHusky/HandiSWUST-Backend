@@ -14,9 +14,10 @@ import org.springframework.web.client.ResourceAccessException;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 @Component
 public class ApiLayerAspect {
     private final Map<String, Count> errorCounts = new ConcurrentHashMap<>();
-    private final HashMap<String, Long> breakTime = new HashMap<>();
+    private final Map<String, Long> breakTime = new ConcurrentHashMap<>();
     @Value("${swust.api.breaker.threshold:20}")
     private int THRESHOLD;    // 超时阈值，单位：次
     @Value("${swust.api.breaker.break-millisecond:120000}")
@@ -54,13 +55,13 @@ public class ApiLayerAspect {
         if (cnt == null) {
             cnt = new Count(0, System.currentTimeMillis());
             errorCounts.put(method, cnt);
-        } else if (System.currentTimeMillis() > cnt.lastCountTime + CIRCLE) {
-            cnt.times = 0;
-            cnt.lastCountTime = System.currentTimeMillis();
-        } else if (cnt.times >= THRESHOLD) {
+        } else if (System.currentTimeMillis() > cnt.lastCountTime.get() + CIRCLE) {
+            cnt.times.set(0);
+            cnt.lastCountTime.set(System.currentTimeMillis());
+        } else if (cnt.times.get() >= THRESHOLD) {
             breakTime.put(method, System.currentTimeMillis());
-            cnt.times = 0;
-            cnt.lastCountTime = System.currentTimeMillis();
+            cnt.times.set(0);
+            cnt.lastCountTime.set(System.currentTimeMillis());
             Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, method + " 请求错误次数过多，触发熔断 " + BREAK_MILLISECOND + "ms");
             throw new CircuitBreakerException();
         }
@@ -72,22 +73,22 @@ public class ApiLayerAspect {
                     rootCause instanceof SocketTimeoutException |
                     (rootCause instanceof HttpHostConnectException && rootCause.getMessage().contains("timed out")) |
                     rootCause instanceof ConnectionRequestTimeoutException) {
-                cnt.times++;
+                cnt.times.incrementAndGet();
                 Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Timeout: " + method + " " + cnt.times);
                 throw new CircuitBreakerException();
             } else {
                 throw new RuntimeException(e);
             }
         } catch (HttpServerErrorException.BadGateway e) {
-            cnt.times++;
+            cnt.times.incrementAndGet();
             Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Bad Gateway: " + method + " " + cnt.times);
             throw new CircuitBreakerException();
         } catch (IOException e) {
-            cnt.times++;
+            cnt.times.incrementAndGet();
             Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "IO Exception: " + method + " " + cnt.times);
             throw new CircuitBreakerException();
         } catch (RequestException e) {
-            cnt.times++;
+            cnt.times.incrementAndGet();
             Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Request Exception: " + method + " " + cnt.times);
             throw new CircuitBreakerException();
         } catch (Throwable e) {
@@ -99,12 +100,12 @@ public class ApiLayerAspect {
     }
 
     static class Count {
-        int times;
-        long lastCountTime;
+        AtomicInteger times;
+        AtomicLong lastCountTime;
 
         public Count(int times, long lastCountTime) {
-            this.times = times;
-            this.lastCountTime = lastCountTime;
+            this.times = new AtomicInteger(times);
+            this.lastCountTime = new AtomicLong(lastCountTime);
         }
     }
 }
