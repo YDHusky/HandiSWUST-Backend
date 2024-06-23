@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
-import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -34,14 +33,9 @@ public class RawCourseCacheImpl implements RawCourseCache {
     @Override
     public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
         HashSet<Lesson> lessonsResultSet = new HashSet<>();
-        try {
-            for (CourseApi api : courseApis) {
-                lessonsResultSet.addAll(api.getCourse(cookieStore));
-            }
-        } catch (Exception e) {
-            throw new NotLoginException();
+        for (CourseApi api : courseApis) {
+            lessonsResultSet.addAll(api.getCourse(cookieStore));
         }
-
         if (!lessonsResultSet.isEmpty()) {
             ArrayList<Lesson> lessonList = new ArrayList<>(lessonsResultSet);
             ArrayUtils.nullObjChk(lessonList);
