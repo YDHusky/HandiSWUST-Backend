@@ -10,12 +10,10 @@ import org.shirakawatyu.handixikebackend.utils.Requests;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 @Component("examApi")
 public class ExamApiImpl implements ExamApi {
@@ -24,7 +22,6 @@ public class ExamApiImpl implements ExamApi {
         ArrayList<Exam> exams = new ArrayList<>();
         HashMap<String, List<Exam>> map = new HashMap<>();
         int examNum = (strings.length - 8) / 9;
-        System.out.println(examNum);
         for (int p = 0; p < examNum; p++) {
             int aid = 8 + p * 9;
             if ("".equals(strings[aid])) {
