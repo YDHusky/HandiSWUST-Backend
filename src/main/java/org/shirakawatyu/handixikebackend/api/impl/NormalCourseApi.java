@@ -27,6 +27,8 @@ public class NormalCourseApi implements CourseApi {
     @Override
     public List<Lesson> getCourse(CookieStore cookieStore) {
         Requests.getForBytes(baseUrl + "/swust", "", cookieStore);
+        Requests.getForBytes(baseUrl + "/aexp/stuIndex.jsp", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
+        Requests.getForBytes(baseUrl + "/teachn/teachnAction/index.action", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
 
         // 构造表单并拿到一般课表
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
