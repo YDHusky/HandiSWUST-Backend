@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 public class CasLoginApi implements LoginApi {
     private static final String KEY_URL = "http://cas.swust.edu.cn/authserver/getKey";
     private static final String CAPTCHA_URL = "http://cas.swust.edu.cn/authserver/captcha";
-    private static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
+    public static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
 
     @Override
     public Map<String, String> getKey(CookieStore cookieStore) {

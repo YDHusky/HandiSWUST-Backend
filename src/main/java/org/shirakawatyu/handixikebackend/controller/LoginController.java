@@ -57,8 +57,14 @@ public class LoginController {
      * @return {@code Result}
      */
     @PostMapping("/login")
-    public Result login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("captcha") String captcha, HttpServletResponse response) {
+    public Result login(
+            @RequestParam("username") String username,
+            @RequestParam("password") String password,
+            @RequestParam("captcha") String captcha,
+            HttpServletResponse response
+    ) {
         username = username.replace(" ", "");
+        System.out.println(username + "  " + password);
         Result result = loginService.login(username, password, captcha);
         HashMap<String, Object> map = new HashMap<>();
         session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
@@ -93,4 +99,30 @@ public class LoginController {
     public Result loginCheck() {
         return loginService.loginCheck();
     }
+
+    /**
+     * 获取手机验证码
+     *
+     * @param phone 电话
+     * @return {@code Result }
+     *
+     */
+    @GetMapping("/dynamicCode")
+    public Result getMobileCaptchaCode(@RequestParam String phone) {
+        return Result.ok().setMsg(loginService.getDynamicCode(phone));
+    }
+
+    /**
+     * 手机验证码登录
+     *
+     * @param phone 电话
+     * @param code 密码
+     * @return {@code Result }
+     *
+     */
+    @PostMapping("/phone")
+    public Result loginByPhone(@RequestParam String phone, @RequestParam String code) {
+        return loginService.loginByPhone(phone, code);
+    }
+
 }

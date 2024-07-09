@@ -14,4 +14,8 @@ public interface LoginService {
     Result logout();
 
     Result loginCheck();
+
+    String getDynamicCode(String phone);
+
+    Result loginByPhone(String phone, String code);
 }
