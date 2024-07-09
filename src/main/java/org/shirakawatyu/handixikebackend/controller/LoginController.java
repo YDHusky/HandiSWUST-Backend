@@ -64,7 +64,6 @@ public class LoginController {
             HttpServletResponse response
     ) {
         username = username.replace(" ", "");
-        System.out.println(username + "  " + password);
         Result result = loginService.login(username, password, captcha);
         HashMap<String, Object> map = new HashMap<>();
         session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));

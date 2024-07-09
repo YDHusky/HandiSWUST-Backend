@@ -120,9 +120,6 @@ public class LoginServiceImpl implements LoginService {
         Map<String, String> resp = JSON.parseObject(entity, new TypeReference<Map<String, String>>() {
 
         });
-        if ("true".equals(resp.get("success"))) {
-            log.info("验证码获取成功");
-        }
         session.setAttribute("cookieStore", store);
         return resp.get("msg");
     }
