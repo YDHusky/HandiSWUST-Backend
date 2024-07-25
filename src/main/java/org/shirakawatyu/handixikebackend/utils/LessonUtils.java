@@ -2,14 +2,14 @@ package org.shirakawatyu.handixikebackend.utils;
 
 import com.alibaba.fastjson2.JSON;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 
 import java.util.List;
 import java.util.ListIterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @UtilityClass
+@Slf4j
 public class LessonUtils {
     /**
      * 将两节课合并为一节
@@ -94,7 +94,7 @@ public class LessonUtils {
                 }
             }
         } catch (Exception e) {
-            Logger.getLogger("timeProcess,weekday =>").log(Level.WARNING, time);
+            log.error(time);
             return null;
         }
         String sectionStart = time.substring(time.indexOf("星期") + 3, time.indexOf("-"));

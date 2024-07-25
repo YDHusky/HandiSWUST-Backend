@@ -33,8 +33,8 @@ public class Requests {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0";
 
     private static final RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectionRequestTimeout(Timeout.ofMilliseconds(3000))
-            .setResponseTimeout(Timeout.ofMilliseconds(3000))
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(5000))
+            .setResponseTimeout(Timeout.ofMilliseconds(5000))
             .setCircularRedirectsAllowed(true)
             .setMaxRedirects(32)
             .setRedirectsEnabled(true)

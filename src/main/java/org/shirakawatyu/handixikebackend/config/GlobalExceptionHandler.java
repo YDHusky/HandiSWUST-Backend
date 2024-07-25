@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.shirakawatyu.handixikebackend.aop.ApiLayerAspect;
 import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
@@ -12,14 +13,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.net.SocketTimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ShirakawaTyu
  */
 @ControllerAdvice
 @ResponseBody
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = SocketTimeoutException.class)
     public Result SocketTimeoutExceptionHandler(SocketTimeoutException ste) {
@@ -33,8 +33,7 @@ public class GlobalExceptionHandler {
                 break;
             }
         }
-        Logger.getLogger("GlobalExceptionHandler => ")
-                .log(Level.WARNING, "Timeout: " + classLocation);
+        log.warn("Timeout: " + classLocation);
         return Result.fail().code(ResultCode.TIMEOUT).msg("TIMEOUT");
     }
 
@@ -42,8 +41,7 @@ public class GlobalExceptionHandler {
     public Result HttpServerErrorExceptionHandler(HttpServerErrorException e) {
         HttpHeaders responseHeaders = e.getResponseHeaders();
         if (responseHeaders != null && responseHeaders.getHost() != null) {
-            Logger.getLogger("GlobalExceptionHandler")
-                    .log(Level.WARNING, "500 Internal Server Error: " + responseHeaders.getHost().getHostName());
+            log.warn("500 Internal Server Error: " + responseHeaders.getHost().getHostName());
         }
         return Result.fail().code(ResultCode.REMOTE_SERVICE_ERROR).msg("REMOTE_SERVICE_ERROR");
     }

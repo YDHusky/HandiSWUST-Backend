@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.cache.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
@@ -16,13 +17,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.FutureTask;
 
 /**
  * @author ShirakawaTyu
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RawCourseCacheImpl implements RawCourseCache {
 
@@ -33,9 +34,17 @@ public class RawCourseCacheImpl implements RawCourseCache {
     @Override
     public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
         HashSet<Lesson> lessonsResultSet = new HashSet<>();
-        for (CourseApi api : courseApis) {
-            lessonsResultSet.addAll(api.getCourse(cookieStore));
-        }
+        courseApis.stream().map(api -> {
+            FutureTask<List<Lesson>> task = new FutureTask<>(() -> api.getCourse(cookieStore));
+            Thread.startVirtualThread(task);
+            return task;
+        }).forEach(task -> {
+            try {
+                lessonsResultSet.addAll(task.get());
+            } catch (Exception e) {
+                throw new RuntimeException(e.getCause());
+            }
+        });
         if (!lessonsResultSet.isEmpty()) {
             ArrayList<Lesson> lessonList = new ArrayList<>(lessonsResultSet);
             ArrayUtils.nullObjChk(lessonList);
@@ -60,8 +69,7 @@ public class RawCourseCacheImpl implements RawCourseCache {
 //                redisTemplate.unlink(cursor.next());
 //            }
 //        }
-
-        Logger.getLogger("RawCourseCacheImpl => ").log(Level.INFO, "已清理缓存");
+        log.info("已清理缓存");
     }
 
     @Override

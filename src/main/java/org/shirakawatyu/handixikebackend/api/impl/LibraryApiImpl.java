@@ -2,6 +2,7 @@ package org.shirakawatyu.handixikebackend.api.impl;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.jsoup.Jsoup;
@@ -15,10 +16,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component("libraryApi")
+@Slf4j
 @RequiredArgsConstructor
 public class LibraryApiImpl implements LibraryApi {
 
@@ -28,7 +28,6 @@ public class LibraryApiImpl implements LibraryApi {
     public ArrayList<Library> getBorrows(BasicCookieStore cookieStore) {
 
         ArrayList<Library> books = new ArrayList<>();
-        Logger logger = Logger.getLogger("LibraryApi.getBorrow");
         try {
             Requests.getForBytes("http://202.115.162.45:8080/opac/search_adv.php", "", cookieStore);
             List<Cookie> cookiesStore = cookieStore.getCookies();
@@ -47,7 +46,6 @@ public class LibraryApiImpl implements LibraryApi {
 
             String text = tr.text();
             String[] s = text.split(" ");
-//            System.out.println(Arrays.toString(s));
 
 
             Library library = new Library();
@@ -68,8 +66,7 @@ public class LibraryApiImpl implements LibraryApi {
                 }
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, "查询借阅图书错误，有可能是第一次官网验证不通过，比较玄学，如果该报错出现好几次就是接口寄了");
-            logger.log(Level.WARNING, books.toString());
+            log.warn("查询借阅图书错误，有可能是第一次官网验证不通过，比较玄学，如果该报错出现好几次就是接口寄了: \n{}", books);
             throw e;
         }
         return books;

@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.api.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ScoreApi;
@@ -12,13 +13,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ShirakawaTyu
  */
 @Component("MatrixScoreApi")
+@Slf4j
 public class MatrixScoreApi implements ScoreApi {
 
     private static final String SCORE_URL = "https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm";
@@ -47,7 +47,7 @@ public class MatrixScoreApi implements ScoreApi {
             requiredGPA = s[1].replace("必修课绩点", "");
             return new GradePointAverage(Double.parseDouble(allGPA), Double.parseDouble(requiredGPA));
         } catch (Exception e) {
-            Logger.getLogger("MatrixScoreApi.getGradePointAverage => ").log(Level.SEVERE, resp);
+            log.error("成绩获取失败, 响应如下: {}\n", resp);
             throw e;
         }
     }
@@ -71,7 +71,7 @@ public class MatrixScoreApi implements ScoreApi {
             return processScore(scores);
         } catch (Exception e) {
             if (scores != null) {
-                Logger.getLogger("MatrixScoreApi.getScore => ").log(Level.SEVERE, resp);
+                log.error("成绩获取失败, 响应如下: {}\n", resp);
             }
             throw e;
         }
@@ -87,7 +87,7 @@ public class MatrixScoreApi implements ScoreApi {
             return null;
         }
         if (!scores.isEmpty()) {
-            Logger.getLogger("MatrixScoreApi.processScore => ").log(Level.WARNING, scores.toString());
+            log.warn(scores.toString());
         }
         return hashMap;
     }

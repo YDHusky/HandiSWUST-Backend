@@ -6,6 +6,7 @@ import com.alibaba.fastjson2.TypeReference;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
@@ -17,8 +18,6 @@ import org.shirakawatyu.handixikebackend.common.Result;
 import org.shirakawatyu.handixikebackend.common.ResultCode;
 import org.shirakawatyu.handixikebackend.service.LoginService;
 import org.shirakawatyu.handixikebackend.utils.Requests;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -35,9 +34,9 @@ import java.util.Objects;
  * @author ShirakawaTyu
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
-    private static final Logger log = LoggerFactory.getLogger(LoginServiceImpl.class);
     @Resource(name = "CasLoginApi")
     LoginApi casLoginApi;
 

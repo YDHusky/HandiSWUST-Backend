@@ -1,6 +1,7 @@
 package org.shirakawatyu.handixikebackend.api.impl;
 
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
 import org.shirakawatyu.handixikebackend.api.ExamApi;
@@ -12,10 +13,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component("examApi")
+@Slf4j
 public class ExamApiImpl implements ExamApi {
     private String setExamList(String[] strings) {
 
@@ -53,7 +53,6 @@ public class ExamApiImpl implements ExamApi {
 
     @Override
     public String getExam(CookieStore cookieStore) {
-        Logger log = Logger.getLogger("ExamApiImpl.getExam :  ");
         try {
             String authInfo = Requests.getForString("https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT", "", cookieStore);
             if (authInfo.contains("账号禁止使用")) {
@@ -85,7 +84,7 @@ public class ExamApiImpl implements ExamApi {
             }
             return setExamList(ns);
         } catch (Exception e) {
-            log.log(Level.SEVERE, "可能是登录凭证过期了，八成不会出这个问题");
+            log.warn("可能是登录凭证过期了，八成不会出这个问题");
             throw e;
         }
     }

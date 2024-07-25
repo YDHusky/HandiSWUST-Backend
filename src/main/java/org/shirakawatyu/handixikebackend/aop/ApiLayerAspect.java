@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.aop;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.HttpHostConnectException;
 import org.apache.hc.core5.http.ConnectionRequestTimeoutException;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,13 +19,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ShirakawaTyu
  */
 @Aspect
+@Slf4j
 @Component
 public class ApiLayerAspect {
     private final Map<String, Count> errorCounts = new ConcurrentHashMap<>();
@@ -62,38 +62,30 @@ public class ApiLayerAspect {
             breakTime.put(method, System.currentTimeMillis());
             cnt.times.set(0);
             cnt.lastCountTime.set(System.currentTimeMillis());
-            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, method + " 请求错误次数过多，触发熔断 " + BREAK_MILLISECOND + "ms");
+            log.warn("{} 请求错误次数过多，触发熔断 {}ms", method, BREAK_MILLISECOND);
             throw new CircuitBreakerException();
         }
         try {
             return point.proceed();
-        } catch (ResourceAccessException e) {
-            Throwable rootCause = e.getRootCause();
-            if (rootCause instanceof HttpServerErrorException.GatewayTimeout |
-                    rootCause instanceof SocketTimeoutException |
-                    (rootCause instanceof HttpHostConnectException && rootCause.getMessage().contains("timed out")) |
-                    rootCause instanceof ConnectionRequestTimeoutException) {
-                cnt.times.incrementAndGet();
-                Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Timeout: " + method + " " + cnt.times);
-                throw new CircuitBreakerException();
-            } else {
-                throw new RuntimeException(e);
-            }
-        } catch (HttpServerErrorException.BadGateway e) {
-            cnt.times.incrementAndGet();
-            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Bad Gateway: " + method + " " + cnt.times);
-            throw new CircuitBreakerException();
-        } catch (IOException e) {
-            cnt.times.incrementAndGet();
-            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "IO Exception: " + method + " " + cnt.times);
-            throw new CircuitBreakerException();
-        } catch (RequestException e) {
-            cnt.times.incrementAndGet();
-            Logger.getLogger("ApiLayerAspect => ").log(Level.WARNING, "Request Exception: " + method + " " + cnt.times);
-            throw new CircuitBreakerException();
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            switch (e.getCause()) {
+                case ResourceAccessException e1 -> {
+                    Throwable rootCause = e1.getRootCause();
+                    if (rootCause instanceof HttpServerErrorException.GatewayTimeout | rootCause instanceof SocketTimeoutException |
+                            (rootCause instanceof HttpHostConnectException && rootCause.getMessage().contains("timed out")) |
+                            rootCause instanceof ConnectionRequestTimeoutException) {
+                        defaultHandler(cnt, method, e1);
+                    } else {
+                        throw new RuntimeException(e1);
+                    }
+                }
+                case HttpServerErrorException.BadGateway e1 -> defaultHandler(cnt, method, e1);
+                case IOException e1 -> defaultHandler(cnt, method, e1);
+                case RequestException e1 -> defaultHandler(cnt, method, e1);
+                default -> throw new RuntimeException(e);
+            }
         }
+        return null;
     }
 
     public static class CircuitBreakerException extends RuntimeException {
@@ -107,5 +99,13 @@ public class ApiLayerAspect {
             this.times = new AtomicInteger(times);
             this.lastCountTime = new AtomicLong(lastCountTime);
         }
+    }
+
+    private void defaultHandler(Count cnt, String method, Throwable e) {
+        cnt.times.updateAndGet((x) -> {
+            log.warn("{}: {} {}", e.getClass().getSimpleName(), method, cnt.times);
+            return x + 1;
+        });
+        throw new CircuitBreakerException();
     }
 }

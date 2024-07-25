@@ -2,6 +2,7 @@ package org.shirakawatyu.handixikebackend.api.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.exception.NotLoginException;
@@ -13,16 +14,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ShirakawaTyu
  */
 @Component("NormalCourseApi")
+@Slf4j
 public class NormalCourseApi implements CourseApi {
     private static final String baseUrl = "http://sjjx.swust.edu.cn";
-    private static final Logger log = Logger.getLogger("At NormalCourseApi JSONException => ");
 
     @Override
     public List<Lesson> getCourse(CookieStore cookieStore) {
@@ -42,9 +41,8 @@ public class NormalCourseApi implements CourseApi {
             lessonsArray = JSON.parseArray(body, Lesson.class);
         } catch (JSONException e) {
             if (!body.contains("非法登录，请通过正规途径登录")) {
-                log.log(Level.WARNING, "错误JSON字符串：" + body);
+                log.warn("错误JSON字符串：" + body);
             }
-//            log.log(Level.WARNING, "登录状态异常，返回值：" + body);
             // 一般来说这个问题是由于登录过期引起的
             throw new NotLoginException();
         }

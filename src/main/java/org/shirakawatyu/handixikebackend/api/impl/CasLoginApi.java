@@ -2,6 +2,7 @@ package org.shirakawatyu.handixikebackend.api.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,13 +18,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ShirakawaTyu
  */
 @Component("CasLoginApi")
+@Slf4j
 public class CasLoginApi implements LoginApi {
     private static final String KEY_URL = "http://cas.swust.edu.cn/authserver/getKey";
     private static final String CAPTCHA_URL = "http://cas.swust.edu.cn/authserver/captcha";
@@ -72,11 +72,11 @@ public class CasLoginApi implements LoginApi {
                 return ResultCode.LOGIN_SUCCESS;
             }
         } catch (HttpClientErrorException e) {
-            Logger.getLogger("CasLoginApi.login => ").log(Level.WARNING, username + "\n" + body);
             int status = e.getStatusCode().value();
             if (cookieStore.getCookies().size() >= 3) {
-                Logger.getLogger("CasLoginApi.login => ").log(Level.WARNING, "一站式大厅崩溃，但登录接口正常");
+                log.info("一站式大厅崩溃，但登录接口正常");
             } else if (status == 401) {
+                log.warn("{} 登录失败, 返回值: \n {}", username, body);
                 return ResultCode.LOGIN_FAIL;
             } else {
                 return ResultCode.REMOTE_SERVICE_ERROR;
