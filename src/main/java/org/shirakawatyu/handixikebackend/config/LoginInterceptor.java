@@ -37,7 +37,8 @@ public class LoginInterceptor implements MatchableHandlerInterceptor {
                 "/api/week",
                 "/api/web/version",
                 "/api/v2/course/local/**",
-                "/api/v2/test/ping"
+                "/api/v2/test/ping",
+                "/actuator/**"
         );
     }
 }

@@ -40,7 +40,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-            <version>3.3.3</version>
         </dependency>
 
         <dependency>
@@ -69,10 +68,10 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.25</version>
         </dependency>
+<!--    千万不要手动定义版本    -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.13.3</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
