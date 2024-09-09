@@ -1,7 +1,7 @@
 package org.shirakawatyu.handixikebackend.utils;
 
 import lombok.experimental.UtilityClass;
-import org.shirakawatyu.handixikebackend.common.Const;
+import org.shirakawatyu.handixikebackend.common.Constants;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -22,12 +22,12 @@ public class DateUtil {
     }
 
     public static String totalWeek() {
-        long week = (Const.END_DATE - Const.START_DATE) / (1000 * 60 * 60 * 24 * 7);
+        long week = (Constants.END_DATE - Constants.START_DATE) / (1000 * 60 * 60 * 24 * 7);
         return Long.toString(week);
     }
 
     public static String curWeek() {
-        long cur = (System.currentTimeMillis() - Const.START_DATE) / (1000 * 60 * 60 * 24 * 7) + 1;
+        long cur = (System.currentTimeMillis() - Constants.START_DATE) / (1000 * 60 * 60 * 24 * 7) + 1;
 //        if (cur > Long.parseLong(totalWeek())) return totalWeek();
         return Long.toString(cur);
     }

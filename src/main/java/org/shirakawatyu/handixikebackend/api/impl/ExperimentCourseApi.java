@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
-import org.shirakawatyu.handixikebackend.common.Const;
+import org.shirakawatyu.handixikebackend.common.Constants;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.LessonUtils;
 import org.shirakawatyu.handixikebackend.utils.Requests;
@@ -32,7 +32,7 @@ public class ExperimentCourseApi implements CourseApi {
         Requests.getForBytes(BASE_URL + "/swust", "", cookieStore);
         // 拿到实验课表
         // 预请求一次得到页数
-        String body = Requests.getForString(getExperimentApiUrl("2", Const.CURRENT_TERM), REFERER, cookieStore);
+        String body = Requests.getForString(getExperimentApiUrl("2", Constants.CURRENT_TERM), REFERER, cookieStore);
         int allPage;
         try {
             Document preDoc = Jsoup.parse(Objects.requireNonNull(body));
@@ -91,7 +91,7 @@ public class ExperimentCourseApi implements CourseApi {
         for (int i = 1; i <= totalPage; i++) {
             int finalI = i;
             FutureTask<String> futureTask = new FutureTask<>(() ->
-                Requests.getForString(getExperimentApiUrl(String.valueOf(finalI), Const.CURRENT_TERM), REFERER, cookieStore));
+                Requests.getForString(getExperimentApiUrl(String.valueOf(finalI), Constants.CURRENT_TERM), REFERER, cookieStore));
             futureTasks.add(futureTask);
             Thread.startVirtualThread(futureTask);
         }
