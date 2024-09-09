@@ -68,6 +68,11 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.25</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>1.5.2</version>
+        </dependency>
 <!--    千万不要手动定义版本    -->
         <dependency>
             <groupId>io.micrometer</groupId>
