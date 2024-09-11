@@ -42,6 +42,9 @@ public class NormalCourseApi implements CourseApi {
         } catch (JSONException e) {
             if (!body.contains("非法登录，请通过正规途径登录")) {
                 log.warn("错误JSON字符串：" + body);
+            } else {
+                log.warn("非法登录，请通过正规途径登录");
+                throw new NotLoginException("非法登录");
             }
             // 一般来说这个问题是由于登录过期引起的
             throw new NotLoginException();

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
+import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -41,6 +42,11 @@ public class RawCourseCacheImpl implements RawCourseCache {
         }).forEach(task -> {
             try {
                 lessonsResultSet.addAll(task.get());
+            } catch (NotLoginException nle) {
+                if (nle.getMessage() != null && nle.getMessage().contains("非法登录")) {
+                    log.warn(no + " :非法登录");
+                }
+                throw nle;
             } catch (Exception e) {
                 throw new RuntimeException(e.getCause());
             }
