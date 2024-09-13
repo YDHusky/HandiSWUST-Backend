@@ -40,8 +40,8 @@ public class JwtUtils {
         @SuppressWarnings("unchecked")
         Map<String, Object> objectMap = (Map<String, Object>) JSON.parse(payload, JSONReader.Feature.SupportAutoType);
         Object cookieStore = objectMap.get("cookieStore");
-        if (cookieStore instanceof String cookieStoreString) {
-            List<Cookie> objects = JSON.parseArray(cookieStoreString, Cookie.class, JSONReader.Feature.SupportAutoType);
+        if (cookieStore instanceof String str) {
+            List<Cookie> objects = JSON.parseArray(str, Cookie.class, JSONReader.Feature.SupportAutoType);
             BasicCookieStore basicCookieStore = new BasicCookieStore();
             objects.forEach(basicCookieStore::addCookie);
             objectMap.put("cookieStore", basicCookieStore);

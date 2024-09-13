@@ -35,16 +35,17 @@ public class RawCourseCacheImpl implements RawCourseCache {
     @Override
     public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
         HashSet<Lesson> lessonsResultSet = new HashSet<>();
-        courseApis.stream().map(api -> {
+        List<FutureTask<List<Lesson>>> tasks = courseApis.stream().map(api -> {
             FutureTask<List<Lesson>> task = new FutureTask<>(() -> api.getCourse(cookieStore));
             Thread.startVirtualThread(task);
             return task;
-        }).forEach(task -> {
+        }).toList();
+        tasks.forEach(task -> {
             try {
                 lessonsResultSet.addAll(task.get());
             } catch (NotLoginException nle) {
                 if (nle.getMessage() != null && nle.getMessage().contains("非法登录")) {
-                    log.warn(no + " :非法登录");
+                    log.warn("{} :非法登录", no);
                 }
                 throw nle;
             } catch (Exception e) {
