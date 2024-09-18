@@ -1,10 +1,13 @@
 package org.shirakawatyu.handixikebackend.cache.impl;
 
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
+import org.shirakawatyu.handixikebackend.api.impl.NormalCourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
+import org.shirakawatyu.handixikebackend.common.Constants;
 import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
@@ -14,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +34,8 @@ public class RawCourseCacheImpl implements RawCourseCache {
 
     private final List<CourseApi> courseApis;
     private final StringRedisTemplate redisTemplate;
+    @Resource(name = "NormalCourseApi")
+    private NormalCourseApi normalCourseApi;
 
     @Cacheable(value = "Course", key = "'r'+#p1", unless = "null == #result")
     @Override
@@ -56,6 +62,11 @@ public class RawCourseCacheImpl implements RawCourseCache {
             ArrayList<Lesson> lessonList = new ArrayList<>(lessonsResultSet);
             ArrayUtils.nullObjChk(lessonList);
             return lessonList;
+        } else if ("1".equals(Constants.CURRENT_TERM.split("-")[2]) &&
+                no.substring(0, 6).contains(String.valueOf(LocalDate.now().getYear()))) {
+            // 新生可以用教务系统
+            lessonsResultSet.addAll(normalCourseApi.getCourseFromMatrix(cookieStore));
+            return new ArrayList<>(lessonsResultSet);
         }
         return null;
     }
