@@ -3,7 +3,9 @@ package org.shirakawatyu.handixikebackend.api.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.shirakawatyu.handixikebackend.api.ScoreApi;
+import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.exception.OutOfCreditException;
 import org.shirakawatyu.handixikebackend.pojo.GradePointAverage;
 import org.shirakawatyu.handixikebackend.pojo.Score;
@@ -64,10 +66,11 @@ public class MatrixScoreApi implements ScoreApi {
                 throw new OutOfCreditException();
             }
             resp = Requests.getForString(SCORE_URL + "?event=studentProfile:courseMark", "", cookieStore);
-            scores = Jsoup.parse(resp).getElementsByClass("UItable").select("tr").eachText();
-            if (scores.isEmpty()) {
-                return null;
+            Document document = Jsoup.parse(resp);
+            if (document.getElementById("blueBar") == null) {
+                throw new NotLoginException();
             }
+            scores = document.getElementsByClass("UItable").select("tr").eachText();
             return processScore(scores);
         } catch (Exception e) {
             if (scores != null) {
@@ -83,9 +86,6 @@ public class MatrixScoreApi implements ScoreApi {
         ScoreUtils.requiredScoreFilter(scores, hashMap);
         ScoreUtils.optionalScoreFilter(scores, hashMap);
         ScoreUtils.cetScoreFilter(scores, hashMap);
-        if (hashMap.isEmpty()) {
-            return null;
-        }
         if (!scores.isEmpty()) {
             log.warn(scores.toString());
         }
