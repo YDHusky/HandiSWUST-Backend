@@ -65,12 +65,7 @@ public class LoginController {
     ) {
         username = username.replace(" ", "");
         Result result = loginService.login(username, password, captcha);
-        HashMap<String, Object> map = new HashMap<>();
-        session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
-        Cookie cookie = new Cookie("Token", JwtUtils.create(map));
-        cookie.setPath("/");
-        cookie.setMaxAge((int) ((DateUtil.getTomorrow() - System.currentTimeMillis()) / 1000));
-        response.addCookie(cookie);
+        setToken(response);
         return result;
     }
 
@@ -120,8 +115,18 @@ public class LoginController {
      *
      */
     @PostMapping("/phone")
-    public Result loginByPhone(@RequestParam String phone, @RequestParam String code) {
-        return loginService.loginByPhone(phone, code);
+    public Result loginByPhone(@RequestParam String phone, @RequestParam String code, HttpServletResponse response) {
+        Result result = loginService.loginByPhone(phone, code);
+        setToken(response);
+        return result;
     }
 
+    private void setToken(HttpServletResponse response) {
+        HashMap<String, Object> map = new HashMap<>();
+        session.getAttributeNames().asIterator().forEachRemaining(key -> map.put(key, session.getAttribute(key)));
+        Cookie cookie = new Cookie("Token", JwtUtils.create(map));
+        cookie.setPath("/");
+        cookie.setMaxAge((int) ((DateUtil.getTomorrow() - System.currentTimeMillis()) / 1000));
+        response.addCookie(cookie);
+    }
 }
