@@ -56,6 +56,7 @@ public class NormalCourseApi implements CourseApi {
             throw new NotLoginException();
         }
         return lessonsArray;
+//        return getCourseFromMatrix(cookieStore);
     }
 
     public List<Lesson> getCourseFromMatrix(CookieStore cookieStore) {
@@ -85,9 +86,9 @@ public class NormalCourseApi implements CourseApi {
                         continue;
                     }
                     String week = spans.get(3).text().replaceAll("\\(.*?\\)", "");
-                    int sectionEnd = (course + 1) * 2;
+                    int sectionEnd = course * 2;
                     lessons.add(new Lesson(
-                            "(看到这个说明查询走的是教务系统)",
+                            "-",
                             spans.get(2).text(), // teacher
                             spans.get(4).text(), // classroom
                             week,

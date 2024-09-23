@@ -65,4 +65,18 @@ public class CourseServiceImpl implements CourseService {
         }
         return Result.fail();
     }
+
+    @Override
+    public Result experimentCourse(String no) {
+        CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
+        List<Lesson> lessonList = rawCourse.getExperimentCourse(cookieStore, no);
+        return Result.ok().data(lessonList);
+    }
+
+    @Override
+    public Result normalCourse(String no) {
+        CookieStore cookieStore = (CookieStore) session.getAttribute("cookieStore");
+        List<Lesson> lessonList = rawCourse.getNormalCourse(cookieStore, no);
+        return Result.ok().data(lessonList);
+    }
 }

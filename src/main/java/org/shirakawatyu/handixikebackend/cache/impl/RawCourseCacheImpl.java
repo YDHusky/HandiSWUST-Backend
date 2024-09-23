@@ -36,6 +36,8 @@ public class RawCourseCacheImpl implements RawCourseCache {
     private final StringRedisTemplate redisTemplate;
     @Resource(name = "NormalCourseApi")
     private NormalCourseApi normalCourseApi;
+    @Resource(name = "ExperimentCourseApi")
+    private CourseApi experimentCourseApi;
 
     @Cacheable(value = "Course", key = "'r'+#p1", unless = "null == #result")
     @Override
@@ -101,5 +103,21 @@ public class RawCourseCacheImpl implements RawCourseCache {
             return false;
         }
         return true;
+    }
+
+    @Cacheable(value = "Course", key = "'e'+#p1", unless = "null == #result")
+    @Override
+    public List<Lesson> getExperimentCourse(CookieStore cookieStore, String no) {
+        List<Lesson> course = experimentCourseApi.getCourse(cookieStore);
+        ArrayUtils.nullObjChk(course);
+        return course;
+    }
+
+    @Cacheable(value = "Course", key = "'n'+#p1", unless = "null == #result")
+    @Override
+    public List<Lesson> getNormalCourse(CookieStore cookieStore, String no) {
+        List<Lesson> course = normalCourseApi.getCourse(cookieStore);
+        ArrayUtils.nullObjChk(course);
+        return course;
     }
 }

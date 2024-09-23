@@ -73,4 +73,24 @@ public class CourseController {
         return courseService.manualDeleteCache(no);
     }
 
+    /**
+     * 实验课程
+     *
+     * @return {@code Result}
+     */
+    @GetMapping("/api/v2/course/exp")
+    public Result experimentCourse(@SessionAttribute String no) {
+        return courseService.experimentCourse(no);
+    }
+
+    /**
+     * 正常课程
+     *
+     * @return {@code Result}
+     */
+    @GetMapping("/api/v2/course/norm")
+    public Result normalCourse(@SessionAttribute String no) {
+        return courseService.normalCourse(no);
+    }
+
 }
