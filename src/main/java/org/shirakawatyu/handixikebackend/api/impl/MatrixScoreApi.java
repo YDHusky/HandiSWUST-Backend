@@ -58,18 +58,18 @@ public class MatrixScoreApi implements ScoreApi {
     public LinkedHashMap<String, ArrayList<Score>> getScore(CookieStore cookieStore) {
         List<String> scores = null;
         String resp = "";
+        String info = Requests.postForString(
+                "http://cas.swust.edu.cn/authserver/login?service=" + SCORE_URL + "?event=studentPortal:DEFAULT_EVENT",
+                new LinkedMultiValueMap<>(), cookieStore);
+        if (info.contains("账号禁止使用")) {
+            throw new OutOfCreditException();
+        }
+        resp = Requests.getForString(SCORE_URL + "?event=studentProfile:courseMark", "", cookieStore);
+        Document document = Jsoup.parse(resp);
+        if (document.getElementById("blueBar") == null) {
+            throw new NotLoginException();
+        }
         try {
-            String info = Requests.postForString(
-                    "http://cas.swust.edu.cn/authserver/login?service=" + SCORE_URL + "?event=studentPortal:DEFAULT_EVENT",
-                    new LinkedMultiValueMap<>(), cookieStore);
-            if (info.contains("账号禁止使用")) {
-                throw new OutOfCreditException();
-            }
-            resp = Requests.getForString(SCORE_URL + "?event=studentProfile:courseMark", "", cookieStore);
-            Document document = Jsoup.parse(resp);
-            if (document.getElementById("blueBar") == null) {
-                throw new NotLoginException();
-            }
             scores = document.getElementsByClass("UItable").select("tr").eachText();
             return processScore(scores);
         } catch (Exception e) {

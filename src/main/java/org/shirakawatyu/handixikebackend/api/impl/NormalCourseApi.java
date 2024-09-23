@@ -31,46 +31,30 @@ public class NormalCourseApi implements CourseApi {
 
     @Override
     public List<Lesson> getCourse(CookieStore cookieStore) {
-        Requests.getForBytes(baseUrl + "/swust", "", cookieStore);
-        Requests.getForBytes(baseUrl + "/aexp/stuIndex.jsp", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
-        Requests.getForBytes(baseUrl + "/teachn/teachnAction/index.action", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
-
-        // 构造表单并拿到一般课表
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("op", "getJwTimeTable");
-        map.add("time", DateUtil.getCurFormatDate());
-        String body = Requests.postForString(baseUrl + "/teachn/stutool", map, cookieStore);
-
-        // 转码，不然会乱码
-        List<Lesson> lessonsArray;
+        List<Lesson> lessons;
         try {
-            lessonsArray = JSON.parseArray(body, Lesson.class);
-        } catch (JSONException e) {
-            if (!body.contains("非法登录，请通过正规途径登录")) {
-                log.warn("错误JSON字符串：" + body);
-            } else {
-                log.warn("非法登录，请通过正规途径登录");
-                throw new NotLoginException("非法登录");
-            }
-            // 一般来说这个问题是由于登录过期引起的
-            throw new NotLoginException();
+            lessons = getCourseFromSjjx(cookieStore);
+        } catch (Exception e) {
+            lessons = getCourseFromMatrix(cookieStore);
         }
-        return lessonsArray;
-//        return getCourseFromMatrix(cookieStore);
+        return lessons;
     }
 
     public List<Lesson> getCourseFromMatrix(CookieStore cookieStore) {
         String url = "https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm";
         ArrayList<Lesson> lessons = new ArrayList<>();
+        String info = Requests.postForString(
+                "http://cas.swust.edu.cn/authserver/login?service=" + url + "?event=studentPortal:DEFAULT_EVENT",
+                new LinkedMultiValueMap<>(), cookieStore);
+        if (info.contains("账号禁止使用")) {
+            throw new OutOfCreditException();
+        }
+        String resp = Requests.getForString(url + "?event=studentPortal:courseTable", "", cookieStore);
+        Document document = Jsoup.parse(resp);
+        if (document.getElementById("blueBar") == null) {
+            throw new NotLoginException();
+        }
         try {
-            String info = Requests.postForString(
-                    "http://cas.swust.edu.cn/authserver/login?service=" + url + "?event=studentPortal:DEFAULT_EVENT",
-                    new LinkedMultiValueMap<>(), cookieStore);
-            if (info.contains("账号禁止使用")) {
-                throw new OutOfCreditException();
-            }
-            String resp = Requests.getForString(url + "?event=studentPortal:courseTable", "", cookieStore);
-            Document document = Jsoup.parse(resp);
             Element uiCourseTable = document.getElementsByClass("UICourseTable").first();
             Elements trs = uiCourseTable.getElementsByTag("tr");
             for (int course = 1; course < trs.size(); course++) {
@@ -96,15 +80,43 @@ public class NormalCourseApi implements CourseApi {
                             spans.get(0).text(), // name
                             String.valueOf(sectionEnd), 
                             String.valueOf(weekday), // weekday
-                            String.valueOf(course + 1), // section
+                            String.valueOf(course), // section
                             "",
                             String.valueOf(sectionEnd - 1))); // sectionStart
                 }
             }
         } catch (Exception e) {
-            log.error("成绩获取失败, 错误如下: {}\n", e.getMessage());
+            log.error("课程获取失败, 错误如下: {}\n", e.getMessage());
             throw e;
         }
         return lessons;
+    }
+
+    public List<Lesson> getCourseFromSjjx(CookieStore cookieStore) {
+        Requests.getForBytes(baseUrl + "/swust", "", cookieStore);
+        Requests.getForBytes(baseUrl + "/aexp/stuIndex.jsp", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
+        Requests.getForBytes(baseUrl + "/teachn/teachnAction/index.action", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
+
+        // 构造表单并拿到一般课表
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("op", "getJwTimeTable");
+        map.add("time", DateUtil.getCurFormatDate());
+        String body = Requests.postForString(baseUrl + "/teachn/stutool", map, cookieStore);
+
+        // 转码，不然会乱码
+        List<Lesson> lessonsArray;
+        try {
+            lessonsArray = JSON.parseArray(body, Lesson.class);
+        } catch (JSONException e) {
+            if (!body.contains("非法登录，请通过正规途径登录")) {
+                log.warn("错误JSON字符串：" + body);
+            } else {
+                log.warn("非法登录，请通过正规途径登录");
+                throw new NotLoginException("非法登录");
+            }
+            // 一般来说这个问题是由于登录过期引起的
+            throw new NotLoginException();
+        }
+        return lessonsArray;
     }
 }
