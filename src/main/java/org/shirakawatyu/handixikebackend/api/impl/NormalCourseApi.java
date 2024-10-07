@@ -65,24 +65,27 @@ public class NormalCourseApi implements CourseApi {
                 }
                 for (int weekday = 0; weekday < tds.size(); weekday++) {
                     Element td = tds.get(weekday);
-                    Elements spans = td.getElementsByTag("span");
-                    if (spans.isEmpty()) {
-                        continue;
+                    Elements lectures = td.getElementsByClass("lecture");
+                    for (Element lecture : lectures) {
+                        Elements spans = lecture.getElementsByTag("span");
+                        if (spans.isEmpty()) {
+                            continue;
+                        }
+                        String week = spans.get(3).text().replaceAll("\\(.*?\\)", "");
+                        int sectionEnd = course * 2;
+                        lessons.add(new Lesson(
+                                "-",
+                                spans.get(2).text(), // teacher
+                                spans.get(4).text(), // classroom
+                                week,
+                                "",
+                                spans.get(0).text(), // name
+                                String.valueOf(sectionEnd),
+                                String.valueOf(weekday), // weekday
+                                String.valueOf(course), // section
+                                "",
+                                String.valueOf(sectionEnd - 1))); // sectionStart
                     }
-                    String week = spans.get(3).text().replaceAll("\\(.*?\\)", "");
-                    int sectionEnd = course * 2;
-                    lessons.add(new Lesson(
-                            "-",
-                            spans.get(2).text(), // teacher
-                            spans.get(4).text(), // classroom
-                            week,
-                            "",
-                            spans.get(0).text(), // name
-                            String.valueOf(sectionEnd), 
-                            String.valueOf(weekday), // weekday
-                            String.valueOf(course), // section
-                            "",
-                            String.valueOf(sectionEnd - 1))); // sectionStart
                 }
             }
         } catch (Exception e) {
