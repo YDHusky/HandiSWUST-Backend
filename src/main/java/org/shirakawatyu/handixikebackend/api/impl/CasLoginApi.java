@@ -27,7 +27,8 @@ import java.util.Objects;
 public class CasLoginApi implements LoginApi {
     private static final String KEY_URL = "http://cas.swust.edu.cn/authserver/getKey";
     private static final String CAPTCHA_URL = "http://cas.swust.edu.cn/authserver/captcha";
-    public static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
+//    public static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login?service=https://matrix.dean.swust.edu.cn/acadmicManager/index.cfm?event=studentPortal:DEFAULT_EVENT";
+    public static final String LOGIN_URL = "http://cas.swust.edu.cn/authserver/login";
 
     @Override
     public Map<String, String> getKey(CookieStore cookieStore) {
@@ -75,11 +76,19 @@ public class CasLoginApi implements LoginApi {
             int status = e.getStatusCode().value();
             if (cookieStore.getCookies().size() >= 3) {
                 log.info("一站式大厅崩溃，但登录接口正常");
+                return ResultCode.LOGIN_SUCCESS;
             } else if (status == 401) {
                 log.warn("{} 登录失败, 返回值: \n {}", username, body);
                 return ResultCode.LOGIN_FAIL;
             } else {
                 return ResultCode.REMOTE_SERVICE_ERROR;
+            }
+        } catch (Exception e) {
+            if (cookieStore.getCookies().size() >= 3) {
+                log.info("一站式大厅崩溃，但登录接口正常");
+                return ResultCode.LOGIN_SUCCESS;
+            } else {
+                throw e;
             }
         }
         return ResultCode.LOGIN_FAIL;
