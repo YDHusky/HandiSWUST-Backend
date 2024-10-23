@@ -103,7 +103,7 @@ public class ApiLayerAspect {
 
     private void defaultHandler(Count cnt, String method, Throwable e) {
         cnt.times.updateAndGet((x) -> {
-            log.warn("{}: {} {}", e.getClass().getSimpleName(), method, cnt.times);
+            log.warn("{}: {} {}", e.getClass(), method, cnt.times, e);
             return x + 1;
         });
         throw new CircuitBreakerException();
