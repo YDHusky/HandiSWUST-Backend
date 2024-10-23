@@ -121,25 +121,16 @@ public class Requests {
         }
     }
 
-    private final PoolingHttpClientConnectionManager M;
-
-    static {
-        try {
-            M = PoolingHttpClientConnectionManagerBuilder.create()
-                    .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
-                            .setSslContext(SSLContextBuilder.create()
-                                    .loadTrustMaterial(TrustAllStrategy.INSTANCE)
-                                    .build())
-                            .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                            .build())
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @SneakyThrows
     private PoolingHttpClientConnectionManager getManager() {
-        return M;
+        return PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
+                        .setSslContext(SSLContextBuilder.create()
+                                .loadTrustMaterial(TrustAllStrategy.INSTANCE)
+                                .build())
+                        .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                        .build())
+                .build();
     }
 }
