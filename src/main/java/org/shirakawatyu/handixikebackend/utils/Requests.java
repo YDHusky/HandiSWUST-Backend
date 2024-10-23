@@ -1,5 +1,6 @@
 package org.shirakawatyu.handixikebackend.utils;
 
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -10,15 +11,24 @@ import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.util.Timeout;
 import org.shirakawatyu.handixikebackend.exception.RequestException;
 import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 /**
@@ -70,6 +80,7 @@ public class Requests {
         });
     }
 
+    @SneakyThrows
     public static <T> T getByHttpClient(String url, String referer, CookieStore cookieStore, HttpClientResponseHandler<T> handler) {
         HttpGet httpGet = new HttpGet(url);
         if (!"".equals(referer)) {
@@ -79,6 +90,7 @@ public class Requests {
         httpGet.addHeader("User-Agent", USER_AGENT);
         try (CloseableHttpClient client = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(getManager())
                 .setRedirectStrategy(new DefaultRedirectStrategy())
                 .setDefaultCookieStore(cookieStore)
                 .disableDefaultUserAgent()
@@ -98,6 +110,7 @@ public class Requests {
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         try (CloseableHttpClient client = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(getManager())
                 .setRedirectStrategy(new DefaultRedirectStrategy())
                 .setDefaultCookieStore(cookieStore)
                 .disableDefaultUserAgent()
@@ -106,5 +119,27 @@ public class Requests {
         } catch (IOException e) {
             throw new RequestException(e);
         }
+    }
+
+    private final PoolingHttpClientConnectionManager M;
+
+    static {
+        try {
+            M = PoolingHttpClientConnectionManagerBuilder.create()
+                    .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
+                            .setSslContext(SSLContextBuilder.create()
+                                    .loadTrustMaterial(TrustAllStrategy.INSTANCE)
+                                    .build())
+                            .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                            .build())
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SneakyThrows
+    private PoolingHttpClientConnectionManager getManager() {
+        return M;
     }
 }
