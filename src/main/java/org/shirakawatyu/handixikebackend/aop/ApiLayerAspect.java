@@ -68,7 +68,12 @@ public class ApiLayerAspect {
         try {
             return point.proceed();
         } catch (Throwable e) {
-            switch (e.getCause()) {
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                log.error("Err in Aspect", e);
+                return null;
+            }
+            switch (cause) {
                 case ResourceAccessException e1 -> {
                     Throwable rootCause = e1.getRootCause();
                     if (rootCause instanceof HttpServerErrorException.GatewayTimeout | rootCause instanceof SocketTimeoutException |
