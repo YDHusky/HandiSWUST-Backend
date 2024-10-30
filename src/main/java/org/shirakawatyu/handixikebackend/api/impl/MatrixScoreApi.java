@@ -41,7 +41,8 @@ public class MatrixScoreApi implements ScoreApi {
                 return null;
             }
             // 教务系统当前还没有你的成绩
-            if ("0".equals(list.get(0).split(" ")[0])) {
+            String text = list.get(0).replace(" ", "");
+            if ("0总学分".equals(text) || "0".equals(text.split(" ")[0])) {
                 return new GradePointAverage(0, 0);
             }
             String[] s = list.get(1).split(" ");
