@@ -24,7 +24,7 @@ import java.util.concurrent.FutureTask;
 @Component("ExperimentCourseApi")
 @Slf4j
 public class ExperimentCourseApi implements CourseApi {
-    private static final String BASE_URL = "http://sjjx.swust.edu.cn";
+    private static final String BASE_URL = "https://sjjx.swust.edu.cn";
     private static final String REFERER = BASE_URL + "/teachn/teachnAction/index.action";
 
     @Override
