@@ -95,7 +95,7 @@ public class NormalCourseApi implements CourseApi {
     }
 
     public List<Lesson> getCourseFromSjjx(CookieStore cookieStore) {
-        String baseUrl = "https://sjjx.swust.edu.cn";
+        String baseUrl = "https://sjjx.dean.swust.edu.cn";
         Requests.getForBytes(baseUrl + "/swust", "", cookieStore);
         Requests.getForBytes(baseUrl + "/aexp/stuIndex.jsp", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
         Requests.getForBytes(baseUrl + "/teachn/teachnAction/index.action", baseUrl + "/aexp/stuLeft.jsp", cookieStore);
