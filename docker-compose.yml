@@ -1,0 +1,109 @@
+version: "3.3"
+services:
+  backend:
+    image: "registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest"
+    ports:
+      - "8080:8080"
+    restart: always
+    links:
+      - redis
+    volumes:
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  frontend:
+    image: "registry.cn-hangzhou.aliyuncs.com/handiswust/frontend:latest"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /home/mht:/mht
+      - /usr/share/caddy/files:/files
+      - caddy_data:/data
+      - caddy_config:/config
+    network_mode: service:wireguard
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  redis:
+    image: "redis:7.2.4-alpine3.19"
+    restart: unless-stopped
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /usr/share/redis/redis.conf:/etc/redis/redis.conf
+      - /usr/share/redis/data/redis:/data
+    command: redis-server /etc/redis/redis.conf
+    privileged: true
+  hitokoto_api:
+    image: "v79q2tuz.mirror.aliyuncs.com/hitokoto/api:release"
+    container_name: hitokoto_api
+    hostname: hitokoto_api
+    environment:
+      NODE_ENV: production
+      # 不要在这里配置服务，没有任何卵用！！！直接改./hitokoto/etc/api/config.yml就可以了！！！实属傻逼
+      url: http://localhost # 请修改为您想要部署的域名
+      api_name: sh-01-X23Hwoc # 改一个好听的标识吧
+      requests.hosts: "['v1.hitokoto.cn']" # 改成你想统计的主机名列表
+      redis.host: redis # Redis 连接地址，如果您使用本文件提供的 Redis 的话您无需修改此项
+      redis.port: 6379 # Redis 连接端口
+      redis.password: shirakawatyu
+      # redis.database: 0
+    ports:
+      - "8088:8000"
+    links:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - "/root/swust-main/hitokoto/etc/api:/usr/src/app/data"
+  watchtower:
+    image: "containrrr/watchtower:latest-dev"
+    volumes:
+      - "/root/.docker/config.json:/config.json"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: --interval 30
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_NOTIFICATION_URL: ""
+      WATCHTOWER_NOTIFICATION_LOG_STDOUT: "true"
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATIONS: "shoutrrr"
+  wireguard:
+    image: "linuxserver/wireguard:latest"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PEERS=2
+    ports:
+      - "80:80"
+      - "443:443"
+      - "82:82"
+      - "50002:50002"
+      - "51820:51820/udp"
+    dns:
+      - 119.29.29.29
+    volumes:
+      - /usr/share/wireguard/config:/config
+    restart: unless-stopped
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+volumes:
+  caddy_data:
+    external: true
+  caddy_config:

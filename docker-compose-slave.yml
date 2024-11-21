@@ -1,0 +1,64 @@
+version: "3.3"
+services:
+  backend:
+    image: "registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest"
+    restart: always
+    network_mode: service:wireguard
+    volumes:
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  redis:
+    image: "redis:7.2.4-alpine3.19"
+    restart: unless-stopped
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /usr/share/redis/redis.conf:/etc/redis/redis.conf
+      - /usr/share/redis/data/redis:/data
+    command: redis-server /etc/redis/redis.conf
+    privileged: true
+  watchtower:
+    image: "containrrr/watchtower:latest-dev"
+    volumes:
+      - "/root/.docker/config.json:/config.json"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: --interval 30
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_NOTIFICATION_URL: ""
+      WATCHTOWER_NOTIFICATION_LOG_STDOUT: "true"
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATIONS: "shoutrrr"
+  wireguard:
+    image: "linuxserver/wireguard:latest"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - "8080:8080"
+      - "51820:51820/udp"
+    dns:
+      - 119.29.29.29
+    volumes:
+      - /usr/share/wireguard/config:/config
+    restart: unless-stopped
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
