@@ -32,7 +32,7 @@ public class Constants {
     /**
      * end.date
      */
-    public static long END_DATE = INSTANCE.key("end.date", DateUtil.getDate("2025-6-13"));
+    public static long END_DATE = INSTANCE.key("end.date", DateUtil.getDate("2025-6-14"));
     /**
      * 网络版本
      */
