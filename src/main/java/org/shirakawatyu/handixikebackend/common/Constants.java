@@ -20,19 +20,19 @@ public class Constants {
     /**
      * cur.term
      */
-    public static String CURRENT_TERM = INSTANCE.key("cur.term", "2024-2025-1");
+    public static String CURRENT_TERM = INSTANCE.key("cur.term", "2024-2025-2");
     /**
      * cur.term.long
      */
-    public static long CURRENT_TERM_LONG = INSTANCE.key("cur.term.long", 202320242L);    // 2023-2024-1
+    public static long CURRENT_TERM_LONG = INSTANCE.key("cur.term.long", 202420252L);    // 2023-2024-1
     /**
      * start.date
      */
-    public static long START_DATE = INSTANCE.key("start.date", DateUtil.getDate("2024-9-2"));
+    public static long START_DATE = INSTANCE.key("start.date", DateUtil.getDate("2025-2-17"));
     /**
      * end.date
      */
-    public static long END_DATE = INSTANCE.key("end.date", DateUtil.getDate("2025-1-13"));
+    public static long END_DATE = INSTANCE.key("end.date", DateUtil.getDate("2025-6-13"));
     /**
      * 网络版本
      */
