@@ -20,50 +20,6 @@ public class CourseController {
     // no为学号，用于存取缓存的Key
 
     /**
-     * 全部课程信息
-     *
-     * @return {@code Result}
-     */
-    @GetMapping("/api/v2/course/all")
-    public Result course(@SessionAttribute String no) {
-        return courseService.course(no);
-    }
-
-    /**
-     * 获取本周课程
-     *
-     * @return {@code Result}
-     */
-    @GetMapping("/api/v2/course/cur")
-    public Result curCourse(@SessionAttribute String no) {
-        return courseService.courseCurWeek(no);
-    }
-
-    /**
-     * 查询指定周课程
-     *
-     * @param selectedWeek 选定一周
-     * @return {@code Result}
-     */
-    @GetMapping("/api/v2/course/select/{selectedWeek}")
-    public Result selectedCourse(@PathVariable int selectedWeek, @SessionAttribute String no) {
-        return courseService.courseSelectedWeek(no, selectedWeek);
-
-    }
-
-    /**
-     * 使用本地课程
-     *
-     * @param selectedWeek 选定一周
-     * @param courseData   课程数据
-     * @return {@code Result}
-     */
-    @PostMapping("/api/v2/course/local/{selectedWeek}")
-    public Result useLocalCourse(@PathVariable int selectedWeek, @RequestBody String courseData) {
-        return courseService.useLocalCourse(selectedWeek, courseData);
-    }
-
-    /**
      * 删除课程缓存
      *
      * @return {@code Result}

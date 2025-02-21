@@ -18,14 +18,6 @@ import static org.shirakawatyu.handixikebackend.common.Constants.Props.INSTANCE;
 @UtilityClass
 public class Constants {
     /**
-     * cur.term
-     */
-    public static String CURRENT_TERM = INSTANCE.key("cur.term", "2024-2025-2");
-    /**
-     * cur.term.long
-     */
-    public static long CURRENT_TERM_LONG = INSTANCE.key("cur.term.long", 202420252L);    // 2023-2024-1
-    /**
      * start.date
      */
     public static long START_DATE = INSTANCE.key("start.date", DateUtil.getDate("2025-2-17"));
@@ -82,12 +74,6 @@ public class Constants {
             log.info("dispatch key: {}, val: {}", key, val);
             template.opsForValue().set(key, val);
             switch (key) {
-                case "cur.term":
-                    CURRENT_TERM = key(key, CURRENT_TERM);
-                    break;
-                case "cur.term.long":
-                    CURRENT_TERM_LONG = key(key, CURRENT_TERM_LONG);
-                    break;
                 case "start.date":
                     START_DATE = key(key, START_DATE);
                     break;

@@ -9,8 +9,6 @@ import java.util.List;
  * @author ShirakawaTyu
  */
 public interface RawCourseCache {
-    @Deprecated
-    List<Lesson> getRawCourse(CookieStore cookieStore, String no);
 
     void deleteCache();
 

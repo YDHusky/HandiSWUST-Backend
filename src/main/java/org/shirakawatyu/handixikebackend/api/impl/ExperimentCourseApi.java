@@ -7,7 +7,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
-import org.shirakawatyu.handixikebackend.common.Constants;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.LessonUtils;
 import org.shirakawatyu.handixikebackend.utils.Requests;
@@ -32,7 +31,7 @@ public class ExperimentCourseApi implements CourseApi {
         Requests.getForBytes(BASE_URL + "/swust", "", cookieStore);
         // 拿到实验课表
         // 预请求一次得到页数
-        String body = Requests.getForString(getExperimentApiUrl("2", Constants.CURRENT_TERM), REFERER, cookieStore);
+        String body = Requests.getForString(getExperimentApiUrl("1"), REFERER, cookieStore);
         int allPage;
         try {
             Document preDoc = Jsoup.parse(Objects.requireNonNull(body));
@@ -82,8 +81,8 @@ public class ExperimentCourseApi implements CourseApi {
         return lessonsArray;
     }
 
-    private String getExperimentApiUrl(String pageNum, String currYearterm) {
-        return BASE_URL + "/teachn/teachnAction/index.action?page.pageNum=" + pageNum + "&currTeachCourseCode=&currWeek=&currYearterm=" + currYearterm;
+    private String getExperimentApiUrl(String pageNum) {
+        return BASE_URL + "/teachn/teachnAction/index.action?page.pageNum=" + pageNum;
     }
 
     private List<FutureTask<String>> getPages(int totalPage, CookieStore cookieStore) {
@@ -91,7 +90,7 @@ public class ExperimentCourseApi implements CourseApi {
         for (int i = 1; i <= totalPage; i++) {
             int finalI = i;
             FutureTask<String> futureTask = new FutureTask<>(() ->
-                Requests.getForString(getExperimentApiUrl(String.valueOf(finalI), Constants.CURRENT_TERM), REFERER, cookieStore));
+                Requests.getForString(getExperimentApiUrl(String.valueOf(finalI)), REFERER, cookieStore));
             futureTasks.add(futureTask);
             Thread.startVirtualThread(futureTask);
         }

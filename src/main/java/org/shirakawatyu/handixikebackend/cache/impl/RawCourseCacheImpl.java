@@ -7,8 +7,6 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.shirakawatyu.handixikebackend.api.CourseApi;
 import org.shirakawatyu.handixikebackend.api.impl.NormalCourseApi;
 import org.shirakawatyu.handixikebackend.cache.RawCourseCache;
-import org.shirakawatyu.handixikebackend.common.Constants;
-import org.shirakawatyu.handixikebackend.exception.NotLoginException;
 import org.shirakawatyu.handixikebackend.pojo.Lesson;
 import org.shirakawatyu.handixikebackend.utils.ArrayUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,12 +15,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.FutureTask;
 
 /**
  * @author ShirakawaTyu
@@ -32,46 +26,12 @@ import java.util.concurrent.FutureTask;
 @RequiredArgsConstructor
 public class RawCourseCacheImpl implements RawCourseCache {
 
-    private final List<CourseApi> courseApis;
     private final StringRedisTemplate redisTemplate;
     @Resource(name = "NormalCourseApi")
     private NormalCourseApi normalCourseApi;
     @Resource(name = "ExperimentCourseApi")
     private CourseApi experimentCourseApi;
 
-    @Cacheable(value = "Course", key = "'r'+#p1", unless = "null == #result")
-    @Override
-    public List<Lesson> getRawCourse(CookieStore cookieStore, String no) {
-        HashSet<Lesson> lessonsResultSet = new HashSet<>();
-        List<FutureTask<List<Lesson>>> tasks = courseApis.stream().map(api -> {
-            FutureTask<List<Lesson>> task = new FutureTask<>(() -> api.getCourse(cookieStore));
-            Thread.startVirtualThread(task);
-            return task;
-        }).toList();
-        tasks.forEach(task -> {
-            try {
-                lessonsResultSet.addAll(task.get());
-            } catch (NotLoginException nle) {
-                if (nle.getMessage() != null && nle.getMessage().contains("非法登录")) {
-                    log.warn("{} :非法登录", no);
-                }
-                throw nle;
-            } catch (Exception e) {
-                throw new RuntimeException(e.getCause());
-            }
-        });
-        if (!lessonsResultSet.isEmpty()) {
-            ArrayList<Lesson> lessonList = new ArrayList<>(lessonsResultSet);
-            ArrayUtils.nullObjChk(lessonList);
-            return lessonList;
-        } else if ("1".equals(Constants.CURRENT_TERM.split("-")[2]) &&
-                no.substring(0, 6).contains(String.valueOf(LocalDate.now().getYear()))) {
-            // 新生可以用教务系统
-            lessonsResultSet.addAll(normalCourseApi.getCourseFromMatrix(cookieStore));
-            return new ArrayList<>(lessonsResultSet);
-        }
-        return null;
-    }
 
     @Scheduled(cron = "0 0 1 * * ? ")
     @CacheEvict(value = "Course", allEntries = true)
