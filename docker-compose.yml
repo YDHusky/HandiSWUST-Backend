@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-  backend:
+  handswust:
     image: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com"
     ports:
       - "8080:8080"
@@ -12,7 +12,7 @@ services:
       - /etc/localtime:/etc/localtime
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  frontend:
+  handswust-frontend:
     image: "registry.cn-hangzhou.aliyuncs.com/handiswust/frontend:latest"
     restart: unless-stopped
     cap_add:
