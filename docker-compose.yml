@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: "registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest"
+    image: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com"
     ports:
       - "8080:8080"
     restart: always
