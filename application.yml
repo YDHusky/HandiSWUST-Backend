@@ -1,0 +1,54 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 300
+      cookie:
+        max-age: 300
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      lettuce:
+        pool:
+          max-active: -1
+          max-idle: 10
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: HandiSWUST
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  appoptics:
+    metrics:
+      export:
+        enabled: true
+
+swust:
+  close-time: 0
+  start-time: 6
+  api:
+    breaker:
+      threshold: 20
+      break-millisecond: 120000
+      circle: 60000
+
+cache:
+  default:
+    expire-time: 46800
+
+logging:
+  file:
+    path: ./swust-log
+
+jwt:
+  signature:
