@@ -27,9 +27,9 @@ jobs:
           username: "${{secrets.ALI_ACR_USERNAME}}"
           password: "${{secrets.ALI_ACR_PASSWD}}"
           region-id: "cn-hangzhou"
-          login-server: "registry.cn-hangzhou.aliyuncs.com"
+          login-server: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com"
 
       - name: Build and Push Docker Image
         run: |
-          docker build --tag registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest .
-          docker push registry.cn-hangzhou.aliyuncs.com/handiswust/backend:latest
+          docker build --tag crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com/yudream/handswust:latest .
+          docker push crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com/yudream/handswust:latest
