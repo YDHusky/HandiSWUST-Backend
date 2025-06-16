@@ -1,43 +1,64 @@
 version: "3.3"
 services:
-  handswust:
-    image: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com"
+  backend:
+    image: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com/yudream/handswust:latest"
     ports:
-      - "8080:8080"
+      - "65531:8080"
     restart: always
     links:
       - redis
     volumes:
       - /etc/timezone:/etc/timezone
       - /etc/localtime:/etc/localtime
+      - ./application.yml/:/application.yml
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  handswust-frontend:
-    image: "registry.cn-hangzhou.aliyuncs.com/handiswust/frontend:latest"
+    extra_hosts:
+      - "cas.swust.edu.cn:2001:da8:600e:6001:160::238"
+      - "soa.swust.edu.cn:2001:da8:600e:6001:160::238"  # Docker 20.10+ 支持
+    networks:
+      - dualstack_net 
+  frontend:
+    image: "crpi-bavv47zo78j1v6cv.cn-hangzhou.personal.cr.aliyuncs.com/yudream/handswust-frontend:latest"
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
     volumes:
       - /home/mht:/mht
       - /usr/share/caddy/files:/files
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./application.yml/:/application.yml
       - caddy_data:/data
       - caddy_config:/config
-    network_mode: service:wireguard
+    networks:
+      - dualstack_net     
+    ports:
+      - "65527:80"
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+  captcha:
+    image: "capthca:latest"
+    restart: unless-stopped
+    hostname: captcha
+    ports:
+      - "65526:8000"
+    networks:
+      - dualstack_net
   redis:
     image: "redis:7.2.4-alpine3.19"
     restart: unless-stopped
     hostname: redis
     ports:
-      - "6379:6379"
+      - "65530:6379"
+    networks:
+      - dualstack_net     
     volumes:
       - /usr/share/redis/redis.conf:/etc/redis/redis.conf
       - /usr/share/redis/data/redis:/data
     command: redis-server /etc/redis/redis.conf
     privileged: true
   hitokoto_api:
-    image: "v79q2tuz.mirror.aliyuncs.com/hitokoto/api:release"
+    image: "hitokoto/api:release"
     container_name: hitokoto_api
     hostname: hitokoto_api
     environment:
@@ -48,10 +69,11 @@ services:
       requests.hosts: "['v1.hitokoto.cn']" # 改成你想统计的主机名列表
       redis.host: redis # Redis 连接地址，如果您使用本文件提供的 Redis 的话您无需修改此项
       redis.port: 6379 # Redis 连接端口
-      redis.password: shirakawatyu
       # redis.database: 0
+    networks:
+      - dualstack_net 
     ports:
-      - "8088:8000"
+      - "65532:8000"
     links:
       - redis
     restart: unless-stopped
@@ -62,6 +84,8 @@ services:
     volumes:
       - "/root/.docker/config.json:/config.json"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - dualstack_net 
     command: --interval 30
     restart: unless-stopped
     environment:
@@ -71,38 +95,19 @@ services:
       WATCHTOWER_NOTIFICATION_LOG_STDOUT: "true"
       WATCHTOWER_NOTIFICATION_REPORT: "true"
       WATCHTOWER_NOTIFICATIONS: "shoutrrr"
-  wireguard:
-    image: "linuxserver/wireguard:latest"
-    cap_add:
-      - NET_ADMIN
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - PEERS=2
-    ports:
-      - "80:80"
-      - "443:443"
-      - "82:82"
-      - "50002:50002"
-      - "51820:51820/udp"
-    dns:
-      - 119.29.29.29
-    volumes:
-      - /usr/share/wireguard/config:/config
-    restart: unless-stopped
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-  node_exporter:
-    image: prom/node-exporter:latest
-    container_name: node_exporter
-    command:
-      - '--path.rootfs=/host'
-    network_mode: host
-    pid: host
-    restart: unless-stopped
-    volumes:
-      - '/:/host:ro,rslave'
+
+networks:
+  dualstack_net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.1.0/16"
+          gateway: "172.20.1.1"
+        - subnet: "fd12:abcd::/64"
+          gateway: "fd12:abcd::1"
+
 volumes:
   caddy_data:
     external: true
